@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
+import { normalizePhone } from "../utils/phone";
 import {
   ChatThread,
   ChatMessage,
@@ -12,7 +13,6 @@ import {
 import {
   memoryThreads,
   memoryMessages,
-  memoryAppointments,
   memoryFaqs,
   memoryProfile,
   memoryWhatsAppConfig,
@@ -97,6 +97,22 @@ db.exec(`
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
   )
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS appointments (
+    id TEXT PRIMARY KEY,
+    customerName TEXT NOT NULL,
+    customerPhone TEXT NOT NULL,
+    preferredDay TEXT NOT NULL,
+    preferredTime TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'confirmed',
+    createdAt INTEGER NOT NULL DEFAULT (unixepoch())
+  )
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_appointments_phone ON appointments(customerPhone)
 `);
 
 // -------------------------------------------------------------
@@ -303,13 +319,14 @@ export function sqliteDeleteThread(threadId: string): boolean {
 }
 
 export function sqliteUpsertThread(phone: string, name: string, messageText: string): ChatThread {
-  const existing = sqliteGetThreadByPhone(phone);
+  const normalizedPhone = normalizePhone(phone);
+  const existing = sqliteGetThreadByPhone(normalizedPhone);
   const now = Date.now();
 
   if (!existing) {
     const newThread: ChatThread = {
       id: "thread_" + Date.now(),
-      customerPhone: phone,
+      customerPhone: normalizedPhone,
       customerName: name,
       status: "open",
       lastMessageText: messageText,
@@ -433,13 +450,15 @@ export function buildCustomerContext(customerPhone: string): CustomerContext | n
   });
 
   // Find past appointments for this customer
-  const pastAppointments = memoryAppointments
-    .filter((a) => a.customerPhone === customerPhone)
-    .map((a) => ({
-      day: a.preferredDay,
-      time: a.preferredTime,
-      timestamp: a.timestamp,
-    }));
+  const apptRows = db.prepare(
+    `SELECT preferredDay, preferredTime, createdAt FROM appointments WHERE customerPhone = ? ORDER BY createdAt DESC`
+  ).all(customerPhone) as any[];
+
+  const pastAppointments = apptRows.map((a) => ({
+    day: a.preferredDay,
+    time: a.preferredTime,
+    timestamp: a.createdAt,
+  }));
 
   return {
     customerName: thread.customerName,
@@ -518,19 +537,20 @@ export function sqliteGetContactByPhone(phone: string): Contact | undefined {
 }
 
 export function sqliteUpsertContact(phone: string, name: string): Contact {
-  const existing = sqliteGetContactByPhone(phone);
+  const normalizedPhone = normalizePhone(phone);
+  const existing = sqliteGetContactByPhone(normalizedPhone);
   const now = Date.now();
 
   if (existing) {
     db.prepare(
       `UPDATE contacts SET name = ?, updatedAt = ? WHERE phone = ?`
-    ).run(name, now, phone);
-    return sqliteGetContactByPhone(phone)!;
+    ).run(name, now, normalizedPhone);
+    return sqliteGetContactByPhone(normalizedPhone)!;
   }
 
   const contact: Contact = {
     id: "contact_" + Date.now(),
-    phone,
+    phone: normalizedPhone,
     name,
     createdAt: now,
     updatedAt: now,
@@ -549,4 +569,162 @@ export function sqliteUpsertContact(phone: string, name: string): Contact {
 
   console.log(`[Contacts] New contact created: ${name} (${phone})`);
   return contact;
+}
+
+// Migration: add serviceType column if not present
+try {
+  const cols = db.prepare("PRAGMA table_info(appointments)").all() as any[];
+  if (!cols.some((c: any) => c.name === "serviceType")) {
+    db.exec("ALTER TABLE appointments ADD COLUMN serviceType TEXT DEFAULT 'Check-up'");
+    console.log("[SQLite] Added serviceType column to appointments.");
+  }
+} catch (e) {
+  console.warn("[SQLite] Migration for serviceType skipped:", e);
+}
+
+// -------------------------------------------------------------
+// Appointment Operations
+// -------------------------------------------------------------
+export interface Appointment {
+  id: string;
+  customerName: string;
+  customerPhone: string;
+  preferredDay: string;
+  preferredTime: string;
+  serviceType: string;
+  status: "confirmed" | "cancelled";
+  createdAt: number;
+}
+
+export function sqliteAddAppointment(
+  customerName: string,
+  customerPhone: string,
+  preferredDay: string,
+  preferredTime: string,
+  serviceType?: string
+): Appointment {
+  const appt: Appointment = {
+    id: "appt_" + Date.now(),
+    customerName,
+    customerPhone,
+    preferredDay,
+    preferredTime,
+    serviceType: serviceType || "Check-up",
+    status: "confirmed",
+    createdAt: Date.now(),
+  };
+
+  db.prepare(
+    `INSERT INTO appointments (id, customerName, customerPhone, preferredDay, preferredTime, serviceType, status, createdAt)
+     VALUES (@id, @customerName, @customerPhone, @preferredDay, @preferredTime, @serviceType, @status, @createdAt)`
+  ).run({
+    id: appt.id,
+    customerName: appt.customerName,
+    customerPhone: appt.customerPhone,
+    preferredDay: appt.preferredDay,
+    preferredTime: appt.preferredTime,
+    serviceType: appt.serviceType,
+    status: appt.status,
+    createdAt: appt.createdAt,
+  });
+
+  console.log(`[Appointments] Booked: ${customerName} — ${preferredDay} at ${preferredTime}`);
+  return appt;
+}
+
+export function sqliteGetAllAppointments(): Appointment[] {
+  const rows = db.prepare(
+    `SELECT id, customerName, customerPhone, preferredDay, preferredTime, serviceType, status, createdAt
+     FROM appointments ORDER BY createdAt DESC`
+  ).all() as any[];
+
+  return rows.map((r) => ({
+    id: r.id,
+    customerName: r.customerName,
+    customerPhone: r.customerPhone,
+    preferredDay: r.preferredDay,
+    preferredTime: r.preferredTime,
+    serviceType: r.serviceType || "Check-up",
+    status: r.status as Appointment["status"],
+    createdAt: r.createdAt,
+  }));
+}
+
+export function sqliteGetAppointmentsByPhoneDay(phone: string, day: string): Appointment[] {
+  const normalizedPhone = normalizePhone(phone);
+  const rows = db.prepare(
+    `SELECT id, customerName, customerPhone, preferredDay, preferredTime, serviceType, status, createdAt
+     FROM appointments WHERE customerPhone = ? AND preferredDay = ? AND status = 'confirmed'`
+  ).all(normalizedPhone, day) as any[];
+
+  return rows.map((r) => ({
+    id: r.id,
+    customerName: r.customerName,
+    customerPhone: r.customerPhone,
+    preferredDay: r.preferredDay,
+    preferredTime: r.preferredTime,
+    serviceType: r.serviceType || "Check-up",
+    status: r.status as Appointment["status"],
+    createdAt: r.createdAt,
+  }));
+}
+
+export function sqliteGetAllAppointmentsByPhone(phone: string): Appointment[] {
+  const normalizedPhone = normalizePhone(phone);
+  const rows = db.prepare(
+    `SELECT id, customerName, customerPhone, preferredDay, preferredTime, serviceType, status, createdAt
+     FROM appointments WHERE customerPhone = ? AND status = 'confirmed'
+     ORDER BY createdAt DESC`
+  ).all(normalizedPhone) as any[];
+
+  return rows.map((r) => ({
+    id: r.id,
+    customerName: r.customerName,
+    customerPhone: r.customerPhone,
+    preferredDay: r.preferredDay,
+    preferredTime: r.preferredTime,
+    serviceType: r.serviceType || "Check-up",
+    status: r.status as Appointment["status"],
+    createdAt: r.createdAt,
+  }));
+}
+
+export function sqliteGetAllAppointmentsByPhoneAll(phone: string): Appointment[] {
+  const normalizedPhone = normalizePhone(phone);
+  const rows = db.prepare(
+    `SELECT id, customerName, customerPhone, preferredDay, preferredTime, serviceType, status, createdAt
+     FROM appointments WHERE customerPhone = ?
+     ORDER BY createdAt DESC`
+  ).all(normalizedPhone) as any[];
+
+  return rows.map((r) => ({
+    id: r.id,
+    customerName: r.customerName,
+    customerPhone: r.customerPhone,
+    preferredDay: r.preferredDay,
+    preferredTime: r.preferredTime,
+    serviceType: r.serviceType || "Check-up",
+    status: r.status as Appointment["status"],
+    createdAt: r.createdAt,
+  }));
+}
+
+export function sqliteCancelAppointment(apptId: string): boolean {
+  const result = db.prepare(
+    `UPDATE appointments SET status = 'cancelled' WHERE id = ? AND status = 'confirmed'`
+  ).run(apptId);
+  if (result.changes > 0) {
+    console.log(`[Appointments] Cancelled: ${apptId}`);
+    return true;
+  }
+  return false;
+}
+
+export function sqliteDeleteAppointment(apptId: string): boolean {
+  const result = db.prepare(`DELETE FROM appointments WHERE id = ?`).run(apptId);
+  if (result.changes > 0) {
+    console.log(`[Appointments] Deleted: ${apptId}`);
+    return true;
+  }
+  return false;
 }

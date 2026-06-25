@@ -2,11 +2,12 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   Send, Bot, Sparkles, Plus, Trash, Check, Settings, Phone,
   AlertCircle, Terminal, Search, X, MessageSquare, RefreshCw,
-  BookOpen, Cpu, CheckSquare, LogIn, Eye, EyeOff, Lock, LogOut
+  BookOpen, Cpu, CheckSquare, LogIn, Eye, EyeOff, Lock, LogOut,
+  LayoutDashboard, CalendarDays, Users, Clock
 } from "lucide-react";
 import {
   WhatsAppConfig, BusinessProfile, FAQItem, ChatThread,
-  ChatMessage, CannedResponse, WebhookLog
+  ChatMessage, CannedResponse, WebhookLog, Contact
 } from "./types";
 
 function LoginPage({ onLogin }: { onLogin: () => void }) {
@@ -101,6 +102,10 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [webhookLogs, setWebhookLogs] = useState<WebhookLog[]>([]);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const [threadStatusFilter, setThreadStatusFilter] = useState<'active' | 'resolved'>('active');
+  const [selectedThreadIds, setSelectedThreadIds] = useState<Set<string>>(new Set());
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const [threadSearch, setThreadSearch] = useState("");
   const [composeText, setComposeText] = useState("");
   const [faqQuestion, setFaqQuestion] = useState(""); const [faqAnswer, setFaqAnswer] = useState(""); const [faqKeywords, setFaqKeywords] = useState("");
@@ -115,12 +120,33 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [baseUrl, setBaseUrl] = useState("");
   const [actionNotice, setActionNotice] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const selectedThreadIdRef = useRef<string | null>(null);
+  useEffect(() => { selectedThreadIdRef.current = selectedThreadId; }, [selectedThreadId]);
 
   useEffect(() => {
     fetchProfile(); fetchWhatsAppConfig(); fetchFAQs(); fetchCannedResponses(); fetchThreads(); fetchLogs(); fetchLlmProvider(); fetchBaseUrl();
     fetchDocForSystemContext(); fetchTestSheet();
-    const pollInterval = setInterval(() => { fetchThreads(true); fetchLogs(); }, 6000);
-    return () => clearInterval(pollInterval);
+
+    const evtSource = new EventSource("/api/events");
+    evtSource.addEventListener("refresh", () => {
+      fetchThreads(true);
+      fetchLogs();
+      const currentThread = selectedThreadIdRef.current;
+      if (currentThread) fetchMessages(currentThread);
+    });
+    evtSource.onerror = () => {};
+
+    const pollInterval = setInterval(() => {
+      fetchThreads(true);
+      fetchLogs();
+      const currentThread = selectedThreadIdRef.current;
+      if (currentThread) fetchMessages(currentThread);
+    }, 30000);
+
+    return () => {
+      evtSource.close();
+      clearInterval(pollInterval);
+    };
   }, []);
 
   useEffect(() => { if (selectedThreadId) fetchMessages(selectedThreadId); else setMessages([]); }, [selectedThreadId]);
@@ -134,7 +160,9 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const fetchWhatsAppConfig = async () => { try { const res = await fetch("/api/whatsapp-config"); if (res.ok) setWaConfig(await res.json()); } catch (e) { console.error(e); } };
   const fetchFAQs = async () => { try { const res = await fetch("/api/faqs"); if (res.ok) setFaqs(await res.json()); } catch (e) { console.error(e); } };
   const fetchCannedResponses = async () => { try { const res = await fetch("/api/canned-responses"); if (res.ok) setCannedResponses(await res.json()); } catch (e) { console.error(e); } };
-  const fetchThreads = async (isBackground = false) => { try { const res = await fetch("/api/threads"); if (res.ok) { const data = await res.json() as ChatThread[]; setThreads(data); if (!selectedThreadId && data.length > 0) setSelectedThreadId(data[0].id); } } catch (e) { console.error(e); } };
+  const fetchAppointments = async () => { try { const res = await fetch("/api/appointments"); if (res.ok) setAppointments(await res.json()); } catch (e) { console.error(e); } };
+  const fetchContacts = async () => { try { const res = await fetch("/api/contacts"); if (res.ok) setContacts(await res.json()); } catch (e) { console.error(e); } };
+  const fetchThreads = async (isBackground = false) => { try { const res = await fetch("/api/threads"); if (res.ok) { const data = await res.json() as ChatThread[]; setThreads(data); const currentId = selectedThreadIdRef.current; if (!currentId && data.length > 0 && !isBackground) setSelectedThreadId(data[0].id); } } catch (e) { console.error(e); } };
   const fetchMessages = async (threadId: string) => { setIsLoadingMessages(true); try { const res = await fetch(`/api/threads/${threadId}/messages`); if (res.ok) setMessages(await res.json()); } catch (e) { console.error(e); } finally { setIsLoadingMessages(false); } };
   const fetchLogs = async () => { try { const res = await fetch("/api/webhook-logs"); if (res.ok) setWebhookLogs(await res.json()); } catch (e) { console.error(e); } };
   const fetchLlmProvider = async () => { try { const res = await fetch("/api/llm-provider"); if (res.ok) { const data = await res.json(); setLlmProvider(data.provider); } } catch (e) { console.error(e); } };
@@ -170,6 +198,31 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const toggleThreadAutoReply = async (threadId: string, currentVal: boolean) => { try { const res = await fetch(`/api/threads/${threadId}/auto-reply`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ enabled: !currentVal }) }); if (res.ok) { fetchThreads(true); triggerNotification(`Auto-responder ${!currentVal ? "enabled" : "suspended"}.`); } } catch (e) { console.error(e); } };
   const changeThreadStatus = async (threadId: string, status: 'open' | 'pending' | 'resolved') => { try { const res = await fetch(`/api/threads/${threadId}/status`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) }); if (res.ok) { fetchThreads(true); triggerNotification(`Thread marked as ${status}.`); } } catch (e) { console.error(e); } };
 
+  const toggleThreadSelection = (threadId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedThreadIds(prev => {
+      const next = new Set(prev);
+      if (next.has(threadId)) next.delete(threadId); else next.add(threadId);
+      return next;
+    });
+  };
+  const selectAllThreads = () => {
+    if (selectedThreadIds.size === filteredThreads.length) {
+      setSelectedThreadIds(new Set());
+    } else {
+      setSelectedThreadIds(new Set(filteredThreads.map(t => t.id)));
+    }
+  };
+  const bulkResolve = async () => {
+    const ids = Array.from(selectedThreadIds);
+    try { const res = await fetch("/api/threads/bulk/status", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ threadIds: ids, status: "resolved" }) }); if (res.ok) { setSelectedThreadIds(new Set()); fetchThreads(true); triggerNotification(`${ids.length} threads resolved.`); } } catch (e) { triggerNotification("Bulk resolve failed.", "error"); }
+  };
+  const bulkDelete = async () => {
+    if (!confirm(`Delete ${selectedThreadIds.size} threads? This cannot be undone.`)) return;
+    const ids = Array.from(selectedThreadIds);
+    try { const res = await fetch("/api/threads/bulk/delete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ threadIds: ids }) }); if (res.ok) { setSelectedThreadIds(new Set()); setSelectedThreadId(null); setMessages([]); fetchThreads(true); triggerNotification(`${ids.length} threads deleted.`); } } catch (e) { triggerNotification("Bulk delete failed.", "error"); }
+  };
+
   const handleSendManualMessage = async (e: React.FormEvent) => { e.preventDefault(); if (!selectedThreadId || !composeText.trim()) return; setIsSending(true); try { const res = await fetch(`/api/threads/${selectedThreadId}/send`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: composeText }) }); if (res.ok) { setComposeText(""); fetchMessages(selectedThreadId); fetchThreads(true); triggerNotification("Response dispatched."); } } catch (e) { console.error(e); } finally { setIsSending(false); } };
 
   const triggerAIDraftGeneration = async () => { if (!selectedThreadId) return; setIsDrafting(true); try { const res = await fetch(`/api/threads/${selectedThreadId}/draft`, { method: "POST" }); if (res.ok) { const data = await res.json(); setComposeText(data.draftText); triggerNotification("AI draft loaded!"); } else triggerNotification("Unable to generate AI response.", "error"); } catch (e) { triggerNotification("Server communication failure.", "error"); } finally { setIsDrafting(false); } };
@@ -203,6 +256,13 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             <span className="font-semibold text-sm tracking-tight text-white">🦷 Bright Smile</span>
           </div>
           <span className="text-[10px] text-slate-500 font-mono hidden sm:inline">WhatsApp AI Agent Portal</span>
+          <button
+            onClick={() => { setShowDashboard(!showDashboard); if (!showDashboard) { fetchAppointments(); fetchContacts(); } }}
+            className={`flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-semibold rounded transition ${showDashboard ? 'bg-cyan-600 text-white' : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'}`}
+          >
+            <LayoutDashboard className="w-3 h-3" />
+            <span>Dashboard</span>
+          </button>
         </div>
         <div className="flex items-center gap-2">
           <select value={llmProvider} onChange={(e) => setLlmProvider(e.target.value)} onBlur={saveLlmProvider} className="bg-slate-900 border border-slate-800 text-slate-300 text-[10px] rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-cyan-500">
@@ -217,6 +277,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         </div>
       </div>
 
+      {!showDashboard ? (<>
       {/* MAIN 3-COLUMN LAYOUT */}
       <div className="flex flex-1 min-h-0">
         {/* LEFT PANEL: CHAT LIST */}
@@ -234,12 +295,25 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             <button onClick={() => setThreadStatusFilter('active')} className={`py-1 text-[11px] font-medium rounded transition ${threadStatusFilter === 'active' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'}`}>Active ({threads.filter(t => t.status === 'open' || t.status === 'pending').length})</button>
             <button onClick={() => setThreadStatusFilter('resolved')} className={`py-1 text-[11px] font-medium rounded transition ${threadStatusFilter === 'resolved' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'}`}>Resolved ({threads.filter(t => t.status === 'resolved').length})</button>
           </div>
+          <label className="flex items-center gap-1.5 text-[10px] text-slate-400 cursor-pointer">
+            <input type="checkbox" checked={selectedThreadIds.size > 0 && selectedThreadIds.size === filteredThreads.length} onChange={selectAllThreads} className="w-3 h-3 accent-cyan-500 rounded" />
+            Select All ({filteredThreads.length})
+          </label>
         </div>
+        {selectedThreadIds.size > 0 && (
+          <div className="px-3 py-2 bg-amber-500/10 border-b border-amber-500/20 flex items-center gap-2">
+            <span className="text-[10px] text-amber-400 font-medium">{selectedThreadIds.size} selected</span>
+            <button onClick={bulkResolve} className="px-2.5 py-1 text-[10px] font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded transition">Resolve</button>
+            <button onClick={bulkDelete} className="px-2.5 py-1 text-[10px] font-semibold bg-rose-600 hover:bg-rose-500 text-white rounded transition">Delete</button>
+          </div>
+        )}
         <div className="flex-1 overflow-y-auto divide-y divide-slate-900">
           {filteredThreads.length === 0 ? (<div className="p-8 text-center text-slate-500 text-xs flex flex-col items-center gap-2"><MessageSquare className="w-8 h-8 text-slate-700 stroke-1" /><span>No conversations</span></div>) : (
             filteredThreads.map(t => {
               const isActive = selectedThreadId === t.id;
-              return (<div key={t.id} onClick={() => setSelectedThreadId(t.id)} className={`p-3.5 cursor-pointer transition flex flex-col gap-1.5 hover:bg-slate-900 ${isActive ? "bg-slate-900 border-l-2 border-cyan-500" : ""}`}><div className="flex justify-between items-start"><div className="font-semibold text-xs text-slate-200 truncate max-w-[130px]">{t.customerName}</div><span className="text-[10px] text-slate-500 font-mono">{formatTime(t.lastMessageTime)}</span></div><div className="text-[10px] text-slate-400 font-mono flex items-center justify-between"><span>{t.customerPhone}</span>{t.status === 'pending' ? <span className="px-1 text-[8px] bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded">PENDING</span> : t.status === 'open' ? <span className="px-1 text-[8px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded">OPEN</span> : <span className="px-1 text-[8px] bg-slate-800 text-slate-400 rounded">RESOLVED</span>}</div><div className="text-xs text-slate-400 line-clamp-1 break-all">{t.lastMessageText}</div><div className="flex justify-between items-center mt-1"><span className={`text-[9px] font-semibold px-1 rounded flex items-center gap-0.5 ${t.autoReplyActive ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-500'}`}><Bot className="w-2.5 h-2.5" />{t.autoReplyActive ? 'AI Bot On' : 'Agent Only'}</span>{t.unreadCount! > 0 && <span className="w-2 h-2 rounded-full bg-emerald-500" />}</div></div>);
+              return (<div key={t.id} onClick={() => setSelectedThreadId(t.id)} className={`p-3.5 cursor-pointer transition flex gap-2 hover:bg-slate-900 ${isActive ? "bg-slate-900 border-l-2 border-cyan-500" : ""}`}>
+                <input type="checkbox" checked={selectedThreadIds.has(t.id)} onClick={(e) => toggleThreadSelection(t.id, e)} onChange={() => {}} className="w-3 h-3 mt-1 accent-cyan-500 rounded shrink-0" />
+                <div className="flex flex-col gap-1.5 flex-1 min-w-0"><div className="flex justify-between items-start"><div className="font-semibold text-xs text-slate-200 truncate max-w-[110px]">{t.customerName}</div><span className="text-[10px] text-slate-500 font-mono">{formatTime(t.lastMessageTime)}</span></div><div className="text-[10px] text-slate-400 font-mono flex items-center justify-between"><span>{t.customerPhone}</span>{t.status === 'pending' ? <span className="px-1 text-[8px] bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded">PENDING</span> : t.status === 'open' ? <span className="px-1 text-[8px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded">OPEN</span> : <span className="px-1 text-[8px] bg-slate-800 text-slate-400 rounded">RESOLVED</span>}</div><div className="text-xs text-slate-400 line-clamp-1 break-all">{t.lastMessageText}</div><div className="flex justify-between items-center mt-1"><span className={`text-[9px] font-semibold px-1 rounded flex items-center gap-0.5 ${t.autoReplyActive ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-500'}`}><Bot className="w-2.5 h-2.5" />{t.autoReplyActive ? 'AI Bot On' : 'Agent Only'}</span>{t.unreadCount! > 0 && <span className="w-2 h-2 rounded-full bg-emerald-500" />}</div></div></div>);
             })
           )}
         </div>
@@ -317,7 +391,163 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
        </div>
       </div>
       {/* closes main 3-col layout */}
+      </>) : (
+        <DashboardView threads={threads} appointments={appointments} contacts={contacts} onRefresh={() => { fetchThreads(true); fetchAppointments(); fetchContacts(); }} onClose={() => setShowDashboard(false)} />
+      )}
       {actionNotice && (<div className={`fixed bottom-4 right-4 z-50 px-4 py-3 rounded-lg shadow-2xl border transition-all flex items-center gap-2 max-w-sm ${actionNotice.type === 'success' ? 'bg-slate-900 text-emerald-400 border-emerald-500/30' : 'bg-slate-900 text-rose-400 border-rose-500/30'}`}>{actionNotice.type === 'success' ? <CheckSquare className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}<span className="text-xs font-medium">{actionNotice.text}</span></div>)}
+    </div>
+  );
+}
+
+function DashboardView({ threads, appointments, contacts, onRefresh, onClose }: { threads: ChatThread[]; appointments: any[]; contacts: any[]; onRefresh: () => void; onClose: () => void }) {
+  const [enquiryFilter, setEnquiryFilter] = useState<'all' | 'open' | 'pending' | 'resolved'>('all');
+  const [refreshing, setRefreshing] = useState(false);
+  const activeThreads = threads.filter(t => t.status === 'open' || t.status === 'pending');
+  const resolvedThreads = threads.filter(t => t.status === 'resolved');
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    onRefresh();
+    setTimeout(() => setRefreshing(false), 800);
+  };
+  const todayDate = new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+
+  const filteredEnquiries = threads.filter(t => {
+    if (enquiryFilter === 'all') return true;
+    return t.status === enquiryFilter;
+  });
+
+  const tabBtn = (value: typeof enquiryFilter, label: string, count: number) => (
+    <button
+      onClick={() => setEnquiryFilter(value)}
+      className={`py-1 px-2.5 text-[10px] font-medium rounded transition ${enquiryFilter === value ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+    >{label} ({count})</button>
+  );
+
+  return (
+    <div className="flex flex-col flex-1 overflow-hidden p-6 space-y-6 bg-slate-900/50">
+      <div className="shrink-0 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold text-white">Dashboard</h1>
+          <p className="text-xs text-slate-400">{todayDate}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={handleRefresh} disabled={refreshing} className="px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition flex items-center gap-1 disabled:opacity-50">
+            {refreshing ? <LoaderIcon className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}Refresh
+          </button>
+          <button onClick={onClose} className="px-3 py-1.5 text-xs bg-slate-950 border border-slate-800 hover:bg-slate-800 text-slate-400 rounded transition">Back to Chats</button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-5 gap-4">
+        <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col gap-1">
+          <div className="flex items-center gap-2 text-slate-400 text-[10px]"><MessageSquare className="w-3.5 h-3.5" />Total Threads</div>
+          <div className="text-2xl font-bold text-white">{threads.length}</div>
+        </div>
+        <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col gap-1">
+          <div className="flex items-center gap-2 text-cyan-400 text-[10px]"><Clock className="w-3.5 h-3.5" />Active</div>
+          <div className="text-2xl font-bold text-cyan-400">{activeThreads.length}</div>
+        </div>
+        <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col gap-1">
+          <div className="flex items-center gap-2 text-slate-400 text-[10px]"><Check className="w-3.5 h-3.5" />Resolved</div>
+          <div className="text-2xl font-bold text-slate-300">{resolvedThreads.length}</div>
+        </div>
+        <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col gap-1">
+          <div className="flex items-center gap-2 text-emerald-400 text-[10px]"><CalendarDays className="w-3.5 h-3.5" />Appointments</div>
+          <div className="text-2xl font-bold text-emerald-400">{appointments.length}</div>
+        </div>
+        <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col gap-1">
+          <div className="flex items-center gap-2 text-amber-400 text-[10px]"><Users className="w-3.5 h-3.5" />Contacts</div>
+          <div className="text-2xl font-bold text-amber-400">{contacts.length}</div>
+        </div>
+      </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-6 flex-1 min-h-0">
+        <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col overflow-y-auto">
+          <h2 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><CalendarDays className="w-4 h-4 text-emerald-400" />Appointments</h2>
+          <div className="space-y-2">
+            {appointments.length === 0 ? (
+              <p className="text-xs text-slate-500 py-4 text-center">No appointments booked yet.</p>
+            ) : (
+              appointments.map((a: any) => (
+                <div key={a.id} className={`flex items-center justify-between p-2.5 bg-slate-900 rounded-lg border ${a.status === 'cancelled' ? 'border-rose-500/20 opacity-60' : 'border-slate-800'}`}>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-semibold text-white truncate">{a.customerName}</span>
+                      {a.status === 'cancelled' && <span className="text-[9px] px-1 py-0.5 bg-rose-500/10 text-rose-400 rounded">CANCELLED</span>}
+                    </div>
+                    <div className="text-[10px] text-slate-400 font-mono">{a.customerPhone}</div>
+                    <div className="text-[10px] text-slate-500">{a.serviceType}</div>
+                  </div>
+                  <div className="text-right shrink-0 ml-2">
+                    <div className="text-xs font-semibold text-emerald-400">{a.preferredDay}</div>
+                    <div className="text-[10px] text-slate-400">{a.preferredTime}</div>
+                    {a.status === 'confirmed' && (
+                      <div className="flex gap-1 mt-1">
+                        <button onClick={async (e) => { e.stopPropagation(); await fetch(`/api/appointments/${a.id}/cancel`, { method: 'POST' }); onRefresh(); }} className="text-[9px] px-1.5 py-0.5 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 rounded transition">Cancel</button>
+                        <button onClick={async (e) => { e.stopPropagation(); if (confirm('Delete this appointment?')) { await fetch(`/api/appointments/${a.id}`, { method: 'DELETE' }); onRefresh(); } }} className="text-[9px] px-1.5 py-0.5 bg-slate-800 text-slate-400 hover:bg-slate-700 rounded transition">Delete</button>
+                      </div>
+                    )}
+                    {a.status === 'cancelled' && (
+                      <div className="flex gap-1 mt-1 justify-end">
+                        <button onClick={async (e) => { e.stopPropagation(); if (confirm('Delete this appointment?')) { await fetch(`/api/appointments/${a.id}`, { method: 'DELETE' }); onRefresh(); } }} className="text-[9px] px-1.5 py-0.5 bg-slate-800 text-slate-400 hover:bg-slate-700 rounded transition">Delete</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col overflow-y-auto">
+          <h2 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><MessageSquare className="w-4 h-4 text-cyan-400" />Enquiries</h2>
+          <div className="flex items-center gap-1 bg-slate-900 p-0.5 rounded border border-slate-800 mb-3">
+            {tabBtn('all', 'All', threads.length)}
+            {tabBtn('open', 'Open', threads.filter(t => t.status === 'open').length)}
+            {tabBtn('pending', 'Pending', threads.filter(t => t.status === 'pending').length)}
+            {tabBtn('resolved', 'Resolved', resolvedThreads.length)}
+          </div>
+          <div className="space-y-2">
+            {filteredEnquiries.length === 0 ? (
+              <p className="text-xs text-slate-500 py-4 text-center">No {enquiryFilter === 'all' ? 'enquiries' : enquiryFilter} enquiries.</p>
+            ) : (
+              filteredEnquiries.slice(0, 10).map(t => (
+                <div key={t.id} className="flex items-center justify-between p-2.5 bg-slate-900 rounded-lg border border-slate-800">
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-semibold text-white truncate">{t.customerName}</div>
+                    <div className="text-[10px] text-slate-400 truncate">{t.lastMessageText}</div>
+                  </div>
+                  <div className="text-right shrink-0 ml-2">
+                    <span className={`px-1.5 py-0.5 text-[9px] rounded font-medium ${t.status === 'open' ? 'bg-cyan-500/10 text-cyan-400' : t.status === 'pending' ? 'bg-amber-500/10 text-amber-400' : 'bg-slate-800 text-slate-400'}`}>{t.status.toUpperCase()}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col overflow-y-auto">
+          <h2 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><Users className="w-4 h-4 text-amber-400" />Contacts</h2>
+          <div className="space-y-2">
+            {contacts.length === 0 ? (
+              <p className="text-xs text-slate-500 py-4 text-center">No contacts yet. Contacts are auto-created when customers message.</p>
+            ) : (
+              contacts.slice(0, 12).map((c: any) => (
+                <div key={c.id} className="flex items-center justify-between p-2.5 bg-slate-900 rounded-lg border border-slate-800">
+                  <div>
+                    <div className="text-xs font-semibold text-white">{c.name}</div>
+                    <div className="text-[10px] text-slate-400 font-mono">{c.phone}</div>
+                  </div>
+                  <div className="text-[10px] text-slate-500">{new Date(c.createdAt).toLocaleDateString()}</div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

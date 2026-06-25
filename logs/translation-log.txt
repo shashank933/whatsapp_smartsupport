@@ -1,0 +1,111 @@
+[2026-06-25T02:01:10.886Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
+[2026-06-25T02:14:46.642Z] [LLM TRANSLATE] Original (en): "I have pain in my gums since 2 weeks, do you think I need antibiotics?" | English: "I have pain in my gums since 2 weeks, do you think I need antibiotics?"
+[2026-06-25T02:16:07.267Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
+[2026-06-25T02:16:11.403Z] [LLM TRANSLATE] Original (en): "Help! My tooth just broke and I am bleeding a lot, it hurts so bad." | English: "Help! My tooth just broke and I am bleeding a lot, it hurts so bad."
+[2026-06-25T02:16:15.937Z] [LLM TRANSLATE] Original (ar): "السلام عليكم، كم سعر تبييض الأسنان؟" | English: "Peace be upon you, how much does teeth whitening cost?"
+[2026-06-25T02:16:24.992Z] [TRANSLATION] LLM: Gemini | English: "وعليكم السلام ورحمة الله وبركاته، أهلاً بك يا سيد محمد في عيادة برايت سمايل. سعر تبييض الأسنان هو 80 دينار كويتي. هل ترغب في حجز موعد؟" | Translated (ar): "وعليكم السلام ورحمة الله وبركاته، أهلاً بك يا سيد محمد في عيادة برايت سمايل. سعر تبييض الأسنان هو 80 دينار كويتي. هل ترغب في حجز موعد؟"
+[2026-06-25T02:22:36.146Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
+[2026-06-25T02:28:45.882Z] [LLM TRANSLATE] Original (en): "Help! My tooth just broke and I am bleeding a lot, it hurts so bad." | English: "Help! My tooth just broke and I am bleeding a lot, it hurts so bad."
+[2026-06-25T02:44:28.410Z] [LLM TRANSLATE] Original (en): "Hello, I have a toothache" | English: "Hello, I have a toothache"
+[2026-06-25T02:49:30.049Z] [LLM TRANSLATE] Original (en): "Hi, I need to book an appointment for Sunday at 3 PM" | English: "Hi, I need to book an appointment for Sunday at 3 PM"
+[2026-06-25T10:24:02.503Z] [LLM TRANSLATE] Original (en): "I have severe pain and bleeding, please help!" | English: "I have severe pain and bleeding, please help!"
+[2026-06-25T10:24:10.100Z] [LLM TRANSLATE] Original (en): "I want to book an appointment for Sunday at 10 AM" | English: "I want to book an appointment for Sunday at 10 AM"
+[2026-06-25T10:24:13.862Z] [LLM TRANSLATE] Original (en): "How much does teeth whitening cost?" | English: "How much does teeth whitening cost?"
+[2026-06-25T10:24:22.423Z] [LLM TRANSLATE] Original (ar): "السلام عليكم، عندي الم في الضرس واحتاج موعد" | English: "Peace be upon you, I have a toothache and I need an appointment."
+[2026-06-25T10:24:37.579Z] [TRANSLATION] LLM: Gemini | English: "وعليكم السلام ورحمة الله وبركاته أختي فاطمة. ألف سلامة عليكِ وما تشوفين شر إن شاء الله.
+
+يؤسفنا سماع أنكِ تعانين من ألم في ضرسكِ. يرجى العلم أنه في حال كان الألم شديداً جداً أو مصحوباً بتورم أو نزيف، فننصحكِ بالتوجه فوراً إلى أقرب مركز طوارئ لتلقي الرعاية العاجلة.
+
+أما إذا كنتِ ترغبين في حجز موعد في العيادة ليقوم الطبيب بفحصكِ وتشخيص الحالة، فيرجى تزويدنا باليوم والوقت المفضلين لديكِ (مثلاً: غداً الساعة 5 مساءً) وسنسعد بتأكيد الموعد لكِ فوراً." | Translated (ar): "وعليكم السلام ورحمة الله وبركاته أختي فاطمة. ألف سلامة عليكِ وما تشوفين شر إن شاء الله.
+
+يؤسفنا سماع أنكِ تعانين من ألم في ضرسكِ. يرجى العلم أنه في حال كان الألم شديداً جداً أو مصحوباً بتورم أو نزيف، فننصحكِ بالتوجه فوراً إلى أقرب مركز طوارئ لتلقي الرعاية العاجلة.
+
+أما إذا كنتِ ترغبين في حجز موعد في العيادة ليقوم الطبيب بفحصكِ وتشخيص الحالة، فيرجى تزويدنا باليوم والوقت المفضلين لديكِ (مثلاً: غداً الساعة 5 مساءً) وسنسعد بتأكيد الموعد لكِ فوراً."
+[2026-06-25T10:24:41.104Z] [LLM TRANSLATE] Original (en): "Hi, I need a check-up appointment for Thursday at 2 PM" | English: "Hi, I need a check-up appointment for Thursday at 2 PM"
+[2026-06-25T10:24:43.555Z] [LLM TRANSLATE] Original (en): "Hi, I need a check-up appointment for Thursday at 2 PM" | English: "Hi, I need a check-up appointment for Thursday at 2 PM"
+[2026-06-25T10:24:49.978Z] [LLM TRANSLATE] Original (en): "Hello" | English: "Hello"
+[2026-06-25T10:25:20.401Z] [LLM TRANSLATE] Original (en): "I have severe pain and bleeding, please help!" | English: "I have severe pain and bleeding, please help!"
+[2026-06-25T10:25:24.023Z] [LLM TRANSLATE] Original (en): "I want to book an appointment for Sunday at 10 AM" | English: "I want to book an appointment for Sunday at 10 AM"
+[2026-06-25T10:25:27.327Z] [LLM TRANSLATE] Original (en): "How much does teeth whitening cost?" | English: "How much does teeth whitening cost?"
+[2026-06-25T10:25:37.325Z] [LLM TRANSLATE] Original (ar): "السلام عليكم، عندي الم في الضرس واحتاج موعد" | English: "Peace be upon you, I have a toothache and I need an appointment."
+[2026-06-25T10:25:52.439Z] [TRANSLATION] LLM: Gemini | English: "وعليكم السلام ورحمة الله وبركاته أختي فاطمة. ألف سلامة عليكِ وما تشوفين شر يا رب. 
+
+حفاظاً على سلامتكِ، نود التأكيد أنه في حال كان الألم شديداً جداً، أو مصاحباً لأي تورم أو نزيف، يرجى التوجه فوراً إلى أقرب عيادة طوارئ لتلقي الرعاية العاجلة.
+
+أما لحجز موعد للفحص والتشخيص في عيادتنا بالسالمية، يرجى تزويدنا باليوم والوقت المناسبين لكِ (نحن بانتظاركِ من السبت إلى الخميس، من 9 صباحاً حتى 9 مساءً) وسنسعد بتأكيد الموعد لكِ مباشرة." | Translated (ar): "وعليكم السلام ورحمة الله وبركاته أختي فاطمة. ألف سلامة عليكِ وما تشوفين شر يا رب. 
+
+حفاظاً على سلامتكِ، نود التأكيد أنه في حال كان الألم شديداً جداً، أو مصاحباً لأي تورم أو نزيف، يرجى التوجه فوراً إلى أقرب عيادة طوارئ لتلقي الرعاية العاجلة.
+
+أما لحجز موعد للفحص والتشخيص في عيادتنا بالسالمية، يرجى تزويدنا باليوم والوقت المناسبين لكِ (نحن بانتظاركِ من السبت إلى الخميس، من 9 صباحاً حتى 9 مساءً) وسنسعد بتأكيد الموعد لكِ مباشرة."
+[2026-06-25T10:25:55.356Z] [LLM TRANSLATE] Original (en): "Hi, I need a check-up appointment for Thursday at 2 PM" | English: "Hi, I need a check-up appointment for Thursday at 2 PM"
+[2026-06-25T10:25:57.834Z] [LLM TRANSLATE] Original (en): "Hi, I need a check-up appointment for Thursday at 2 PM" | English: "Hi, I need a check-up appointment for Thursday at 2 PM"
+[2026-06-25T10:25:59.648Z] [LLM TRANSLATE] Original (en): "Hello" | English: "Hello"
+[2026-06-25T10:37:53.848Z] [LLM TRANSLATE] Original (en): "book me for monday ,7 am" | English: "book me for monday ,7 am"
+[2026-06-25T10:38:31.083Z] [LLM TRANSLATE] Original (en): "fatima monday 7am" | English: "fatima monday 7am"
+[2026-06-25T10:41:58.634Z] [LLM TRANSLATE] Original (en): "hi" | English: "hi"
+[2026-06-25T10:43:12.860Z] [LLM TRANSLATE] Original (en): "hi" | English: "hi"
+[2026-06-25T10:51:42.279Z] [LLM TRANSLATE] Original (en): "hi" | English: "hi"
+[2026-06-25T10:53:48.847Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
+[2026-06-25T10:53:57.025Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
+[2026-06-25T10:54:28.563Z] [LLM TRANSLATE] Original (en): "i forgot my appoinment details" | English: "i forgot my appoinment details"
+[2026-06-25T10:55:13.386Z] [LLM TRANSLATE] Original (en): "i forgot my appoinment details" | English: "i forgot my appoinment details"
+[2026-06-25T10:55:53.485Z] [LLM TRANSLATE] Original (en): "what is my appointment timinig and date" | English: "what is my appointment timinig and date"
+[2026-06-25T11:00:01.898Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
+[2026-06-25T11:01:09.017Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
+[2026-06-25T11:06:55.113Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
+[2026-06-25T11:12:13.897Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
+[2026-06-25T11:13:12.724Z] [LLM TRANSLATE] Original (en): "keep it
+" | English: "keep it"
+[2026-06-25T11:19:48.810Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
+[2026-06-25T11:20:19.345Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
+[2026-06-25T11:20:32.062Z] [LLM TRANSLATE] Original (en): "ok" | English: "ok"
+[2026-06-25T11:20:59.444Z] [LLM TRANSLATE] Original (en): "I have pain in my gums since 2 weeks, do you think I need antibiotics?" | English: "I have pain in my gums since 2 weeks, do you think I need antibiotics?"
+[2026-06-25T11:21:47.439Z] [LLM TRANSLATE] Original (en): "I have pain in my gums since 2 weeks, do you think I need antibiotics?" | English: "I have pain in my gums since 2 weeks, do you think I need antibiotics?"
+[2026-06-25T11:40:59.369Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
+[2026-06-25T11:41:15.716Z] [LLM TRANSLATE] Original (ar): "مرحباً، اسمي فاطمة. أود حجز موعد للفحص يوم الأحد الساعة العاشرة صباحاً" | English: "Hello, my name is Fatima. I would like to book a checkup appointment on Sunday at ten in the morning."
+[2026-06-25T11:41:25.925Z] [TRANSLATION] LLM: Gemini | English: "أهلاً بكِ يا فاطمة! يسعدنا جداً حجز موعد للفحص لكِ يوم الأحد الساعة 10:00 صباحاً. تكلفة الفحص هي 15 دينار كويتي. هل ترغبين في تأكيد الحجز لنقوم بجدولته لكِ مباشرة؟" | Translated (ar): "أهلاً بكِ يا فاطمة! يسعدنا جداً حجز موعد للفحص لكِ يوم الأحد الساعة 10:00 صباحاً. تكلفة الفحص هي 15 دينار كويتي. هل ترغبين في تأكيد الحجز لنقوم بجدولته لكِ مباشرة؟"
+[2026-06-25T11:41:36.019Z] [LLM TRANSLATE] Original (en): "I have pain in my gums since 2 weeks, do you think I need antibiotics?" | English: "I have pain in my gums since 2 weeks, do you think I need antibiotics?"
+[2026-06-25T11:42:20.885Z] [LLM TRANSLATE] Original (en): "Help! My tooth just broke and I am bleeding a lot, it hurts so bad." | English: "Help! My tooth just broke and I am bleeding a lot, it hurts so bad."
+[2026-06-25T11:42:26.590Z] [LLM TRANSLATE] Original (ar): "مرحباً، اسمي فاطمة. أود حجز موعد للفحص يوم الأحد الساعة العاشرة صباحاً" | English: "Hello, my name is Fatima. I would like to book an appointment for a checkup on Sunday at 10:00 AM."
+[2026-06-25T11:42:39.628Z] [TRANSLATION] LLM: Gemini | English: "Hello Fatima! We would be delighted to schedule a check-up appointment for you this Sunday at 10:00 AM. The cost for the check-up is 15 KWD. Would you like us to go ahead and confirm this booking for you?" | Translated (ar): "مرحباً فاطمة! يسعدنا حجز موعد فحص طبي لكِ هذا الأحد في تمام الساعة 10:00 صباحاً. تبلغ تكلفة الفحص 15 ديناراً كويتياً. هل تودين أن نقوم بتأكيد هذا الحجز لكِ؟"
+[2026-06-25T11:42:58.147Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
+[2026-06-25T11:43:18.395Z] [LLM TRANSLATE] Original (ar): "مرحباً، اسمي فاطمة. أود حجز موعد للفحص يوم الأحد الساعة العاشرة صباحاً" | English: "Hello, my name is Fatima. I would like to book an appointment for an examination on Sunday at ten in the morning."
+[2026-06-25T11:43:29.140Z] [TRANSLATION] LLM: Gemini | English: "Hello Fatima! We would be delighted to book a check-up appointment for you this Sunday at 10:00 AM. The cost for the check-up is 15 KWD. Would you like us to go ahead and confirm this booking for you?" | Translated (ar): "مرحبًا فاطمة! يسعدنا أن نحجز لكِ موعدًا للفحص هذا الأحد في تمام الساعة 10:00 صباحًا. تبلغ تكلفة الفحص 15 دينارًا كويتيًا. هل ترغبين في أن نقوم بتأكيد هذا الحجز لكِ؟"
+[2026-06-25T11:45:38.469Z] [LLM TRANSLATE] Original (en): "yes" | English: "yes"
+[2026-06-25T11:47:50.050Z] [LLM TRANSLATE] Original (ar): "مرحباً، اسمي فاطمة. أود حجز موعد للفحص يوم الأحد الساعة العاشرة صباحاً" | English: "Hello, my name is Fatima. I would like to book an appointment for the check-up on Sunday at ten o'clock in the morning."
+[2026-06-25T11:48:02.191Z] [TRANSLATION] LLM: Gemini | English: "أهلاً بكِ يا فاطمة. يسعدنا جداً مساعدتكِ في حجز موعد للفحص في عيادة برايت سمايل. لقد تم تسجيل طلبكِ المبدئي ليوم الأحد الساعة 10:00 صباحاً (قيمة الفحص هي 15 دينار كويتي). هذا الوقت متاح ومناسب تماماً لأوقات عملنا. هل ترغبين في تأكيد هذا الموعد؟" | Translated (ar): "أهلاً بكِ يا فاطمة. يسعدنا جداً مساعدتكِ في حجز موعد للفحص في عيادة برايت سمايل. لقد تم تسجيل طلبكِ المبدئي ليوم الأحد الساعة 10:00 صباحاً (قيمة الفحص هي 15 دينار كويتي). هذا الوقت متاح ومناسب تماماً لأوقات عملنا. هل ترغبين في تأكيد هذا الموعد؟"
+[2026-06-25T11:48:21.193Z] [LLM TRANSLATE] Original (en): "yes" | English: "yes"
+[2026-06-25T11:50:51.204Z] [LLM TRANSLATE] Original (en): "???? ?????? ???? ??? ???? ??? ????? ?????? ??????? ??????" | English: "???? ?????? ???? ??? ???? ??? ????? ?????? ??????? ??????"
+[2026-06-25T11:53:26.331Z] [LLM TRANSLATE] Original (ar): "السلام عليكم، اسمي محمد، أريد حجز موعد يوم الخميس الساعة الثالثة" | English: "Peace be upon you, my name is Muhammad, I want to book an appointment on Thursday at three o'clock."
+[2026-06-25T11:53:37.018Z] [TRANSLATION] LLM: Gemini | English: "وعليكم السلام ورحمة الله وبركاته، أهلاً بك يا أستاذ محمد. يسعدنا جداً مساعدتك في حجز موعدك. لقد قمنا بتسجيل طلبك لحجز موعد يوم الخميس القادم الساعة 3:00 عصراً في عيادة "برايت سمايل" لطب الأسنان في السالمية. هل ترغب في تأكيد هذا الموعد لنقوم باعتماده لك؟" | Translated (ar): "وعليكم السلام ورحمة الله وبركاته، أهلاً بك يا أستاذ محمد. يسعدنا جداً مساعدتك في حجز موعدك. لقد قمنا بتسجيل طلبك لحجز موعد يوم الخميس القادم الساعة 3:00 عصراً في عيادة "برايت سمايل" لطب الأسنان في السالمية. هل ترغب في تأكيد هذا الموعد لنقوم باعتماده لك؟"
+[2026-06-25T11:55:29.414Z] [LLM TRANSLATE] Original (en): "?????? ?????? ???? ????? ??? ??? ???????? ?????? ???????" | English: "?????? ?????? ???? ????? ??? ??? ???????? ?????? ???????"
+[2026-06-25T11:56:02.771Z] [LLM TRANSLATE] Original (und): "?????? ?????? ???? ????? ??? ??? ???????? ?????? ???????" | English: "?????? ?????? ???? ????? ??? ??? ???????? ?????? ???????"
+[2026-06-25T11:56:21.430Z] [TRANSLATION] LLM: Gemini | English: "أهلاً بك مجدداً في عيادة برايت سمايل لطب الأسنان. نعتذر منك بشدة، ولكن رسالتك ما زالت تظهر لنا على شكل رموز وعلامات استفهام غير مقروءة. نحن حريصون جداً على مساعدتك! هل يمكنك محاولة الاتصال بنا هاتفياً على الرقم الخاص بنا، أو إرسال الرسالة نصياً بطريقة أخرى؟ شكراً لتفهمك ولطفك!
+
+Welcome back to Bright Smile Dental Clinic. We are truly sorry, but your message is still appearing as unreadable question marks. We really want to help you! Could you please try calling us directly at +96577123456, or resending your message in a different text format? Thank you so much for your understanding and patience!" | Translated (und): "Welcome back to Bright Smile Dental Clinic. We are truly sorry, but your message is still appearing as unreadable question marks. We really want to help you! Could you please try calling us directly at +96577123456, or resending your message in a different text format? Thank you so much for your understanding and patience!"
+[2026-06-25T11:59:02.371Z] [LLM TRANSLATE] Original (ar): "مرحباً، اسمي فاطمة. أود حجز موعد للفحص يوم الأحد الساعة العاشرة صباحاً" | English: "Hello, my name is Fatima. I would like to book an appointment for the examination on Sunday at ten in the morning."
+[2026-06-25T11:59:12.753Z] [TRANSLATION] LLM: Gemini | English: "Hello Fatima! We are happy to let you know that your appointment for the check-up is already successfully confirmed for this coming Sunday at 10:00 AM. The examination fee is 15 KWD. We look forward to welcoming you to our clinic in Salmiya! Please let us know if you need to make any changes." | Translated (ar): "مرحباً فاطمة! يسعدنا إعلامكِ بأن موعد الفحص الخاص بكِ قد تم تأكيده بنجاح ليوم الأحد القادم في تمام الساعة 10:00 صباحاً. رسوم الفحص هي 15 ديناراً كويتياً. نتطلع إلى استقبالكِ في عيادتنا في السالمية! يرجى إعلامنا إذا كنتِ بحاجة إلى إجراء أي تغييرات."
+[2026-06-25T11:59:52.887Z] [LLM TRANSLATE] Original (ar): "مرحباً، اسمي فاطمة. أود حجز موعد للفحص يوم الأحد الساعة العاشرة صباحاً" | English: "Hello, my name is Fatima. I would like to book an appointment for an exam on Sunday at 10:00 AM."
+[2026-06-25T12:00:03.944Z] [TRANSLATION] LLM: Gemini | English: "أهلاً بكِ يا فاطمة في عيادة برايت سمايل لطب الأسنان. يسعدنا جداً مساعدتكِ! يسعدنا حجز موعد لكِ لإجراء الفحص يوم الأحد الساعة 10:00 صباحاً (علماً بأن قيمة الفحص هي 15 دينار كويتي). هل ترغبين في تأكيد هذا الموعد؟" | Translated (ar): "أهلاً بكِ يا فاطمة في عيادة برايت سمايل لطب الأسنان. يسعدنا جداً مساعدتكِ! يسعدنا حجز موعد لكِ لإجراء الفحص يوم الأحد الساعة 10:00 صباحاً (علماً بأن قيمة الفحص هي 15 دينار كويتي). هل ترغبين في تأكيد هذا الموعد؟"
+[2026-06-25T12:01:17.997Z] [LLM TRANSLATE] Original (ar): "مرحباً، اسمي فاطمة. أود حجز موعد للفحص يوم الأحد الساعة العاشرة صباحاً" | English: "Hello, my name is Fatima. I would like to book an appointment for a check-up on Sunday at 10:00 AM."
+[2026-06-25T12:01:22.753Z] [TRANSLATION] LLM: Gemini | English: "Your appointment is confirmed! Name: fatima Day: Sunday Time: 10:00 Check-up: 15 KWD Location: Bright Smile Dental Clinic - Salmiya, Kuwait" | Translated (ar): "تم تأكيد موعدك!
+الاسم: فاطمة
+اليوم: الأحد
+الوقت: 10:00
+الفحص: 15 د.ك
+الموقع: عيادة برايت سمايل لطب الأسنان - السالمية، الكويت"
+[2026-06-25T12:32:01.890Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
+[2026-06-25T12:33:05.788Z] [LLM TRANSLATE] Original (en): "can u check if i have any appointments
+" | English: "can u check if i have any appointments"
+[2026-06-25T12:33:36.438Z] [LLM TRANSLATE] Original (en): "i m not feeling well" | English: "i m not feeling well"
+[2026-06-25T12:34:09.532Z] [LLM TRANSLATE] Original (en): "cancel my bookings" | English: "cancel my bookings"
+[2026-06-25T12:34:43.230Z] [LLM TRANSLATE] Original (en): "cancel my bookings" | English: "cancel my bookings"
+[2026-06-25T12:35:45.658Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
+[2026-06-25T12:47:04.432Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
+[2026-06-25T12:47:38.629Z] [LLM TRANSLATE] Original (en): "cancel it
+" | English: "cancel it"
+[2026-06-25T12:47:59.299Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
+[2026-06-25T12:52:10.587Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
+[2026-06-25T13:00:21.321Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
+[2026-06-25T13:01:03.709Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
+[2026-06-25T13:01:35.675Z] [LLM TRANSLATE] Original (en): "cancel the booking" | English: "cancel the booking"

@@ -5,9 +5,7 @@ import {
   memoryFaqs,
   memoryWhatsAppConfig,
   memoryWebhookLogs,
-  memoryAppointments,
   addLog,
-  getAppointments,
 } from "../db/memoryStore";
 import {
   sqliteGetAllThreads,
@@ -23,11 +21,23 @@ import {
   sqliteGetAllContacts,
   sqliteArchiveThread,
   sqliteDeleteThread,
+  sqliteGetAllAppointments,
+  sqliteCancelAppointment,
+  sqliteDeleteAppointment,
 } from "../db/sqliteStore";
 import { generateAIResponseForMessage } from "../ai/responseEngine";
 import { syncContactToHubSpot } from "../integrations/hubspot";
+import { sseConnect, sseEmit } from "../sse";
+import { normalizePhone } from "../utils/phone";
 
 export const threadRouter = Router();
+
+// -------------------------------------------------------------
+// Server-Sent Events (real-time push to frontend)
+// -------------------------------------------------------------
+threadRouter.get("/events", (req, res) => {
+  sseConnect(res);
+});
 
 // -------------------------------------------------------------
 // Thread Management
@@ -82,6 +92,7 @@ threadRouter.post("/threads/:id/auto-reply", (req, res) => {
   if (!updated) {
     return res.status(404).json({ error: "Thread not found." });
   }
+  sseEmit("refresh");
   res.json({ success: true, thread: updated });
 });
 
@@ -97,6 +108,7 @@ threadRouter.post("/threads/:id/status", (req, res) => {
   if (!updated) {
     return res.status(404).json({ error: "Thread not found." });
   }
+  sseEmit("refresh");
   res.json({ success: true, thread: updated });
 });
 
@@ -108,6 +120,7 @@ threadRouter.post("/threads/:id/archive", (req, res) => {
   if (!updated) {
     return res.status(404).json({ error: "Thread not found." });
   }
+  sseEmit("refresh");
   res.json({ success: true, thread: updated });
 });
 
@@ -119,7 +132,38 @@ threadRouter.delete("/threads/:id", (req, res) => {
   if (!deleted) {
     return res.status(404).json({ error: "Thread not found." });
   }
+  sseEmit("refresh");
   res.json({ success: true });
+});
+
+// -------------------------------------------------------------
+// Bulk Thread Operations
+// -------------------------------------------------------------
+threadRouter.post("/threads/bulk/status", (req, res) => {
+  const { threadIds, status } = req.body;
+  if (!Array.isArray(threadIds) || !["open", "pending", "resolved", "archived"].includes(status)) {
+    return res.status(400).json({ error: "threadIds (array) and valid status required." });
+  }
+  const updated: string[] = [];
+  for (const id of threadIds) {
+    const result = sqliteUpdateThread(id, { status });
+    if (result) updated.push(id);
+  }
+  sseEmit("refresh");
+  res.json({ success: true, count: updated.length });
+});
+
+threadRouter.post("/threads/bulk/delete", (req, res) => {
+  const { threadIds } = req.body;
+  if (!Array.isArray(threadIds)) {
+    return res.status(400).json({ error: "threadIds (array) required." });
+  }
+  const deleted: string[] = [];
+  for (const id of threadIds) {
+    if (sqliteDeleteThread(id)) deleted.push(id);
+  }
+  sseEmit("refresh");
+  res.json({ success: true, count: deleted.length });
 });
 
 // -------------------------------------------------------------
@@ -149,7 +193,6 @@ threadRouter.post("/threads/:id/send", async (req, res) => {
     lastMessageText: content,
     lastMessageTime: Date.now(),
     unreadCount: 0,
-    autoReplyActive: false,
   });
 
   if (
@@ -182,6 +225,7 @@ threadRouter.post("/threads/:id/send", async (req, res) => {
     }
   }
 
+  sseEmit("refresh", { threadId: thread.id });
   res.json({ success: true, message, thread: sqliteGetThreadById(thread.id) });
 });
 
@@ -211,9 +255,10 @@ threadRouter.post("/simulate-incoming", async (req, res) => {
     return res.status(400).json({ error: "SIMULATE error: phone, name, and text are required." });
   }
 
-  const thread = sqliteUpsertThread(customerPhone, customerName, messageText);
-  sqliteUpsertContact(customerPhone, customerName);
-  syncContactToHubSpot(customerPhone, customerName, messageText).catch((err) =>
+  const normalizedPhone = normalizePhone(customerPhone);
+  const thread = sqliteUpsertThread(normalizedPhone, customerName, messageText);
+  sqliteUpsertContact(normalizedPhone, customerName);
+  syncContactToHubSpot(normalizedPhone, customerName, messageText).catch((err) =>
     console.error("[HubSpot] Sync failed:", err)
   );
 
@@ -283,6 +328,7 @@ threadRouter.post("/simulate-incoming", async (req, res) => {
     });
   }
 
+  sseEmit("refresh", { threadId: thread.id });
   res.json({
     success: true,
     thread: sqliteGetThreadById(thread.id),
@@ -304,7 +350,25 @@ threadRouter.get("/webhook-logs", (req, res) => {
 // Appointments
 // -------------------------------------------------------------
 threadRouter.get("/appointments", (req, res) => {
-  res.json(getAppointments());
+  res.json(sqliteGetAllAppointments());
+});
+
+threadRouter.post("/appointments/:id/cancel", (req, res) => {
+  const cancelled = sqliteCancelAppointment(req.params.id);
+  if (!cancelled) {
+    return res.status(404).json({ error: "Appointment not found or already cancelled." });
+  }
+  sseEmit("refresh");
+  res.json({ success: true });
+});
+
+threadRouter.delete("/appointments/:id", (req, res) => {
+  const deleted = sqliteDeleteAppointment(req.params.id);
+  if (!deleted) {
+    return res.status(404).json({ error: "Appointment not found." });
+  }
+  sseEmit("refresh");
+  res.json({ success: true });
 });
 
 // -------------------------------------------------------------

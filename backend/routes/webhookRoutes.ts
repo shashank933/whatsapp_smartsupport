@@ -15,6 +15,8 @@ import {
 } from "../db/sqliteStore";
 import { generateAIResponseForMessage } from "../ai/responseEngine";
 import { syncContactToHubSpot } from "../integrations/hubspot";
+import { sseEmit } from "../sse";
+import { normalizePhone } from "../utils/phone";
 
 export const webhookRouter = Router();
 
@@ -66,7 +68,7 @@ webhookRouter.post("/whatsapp/webhook", async (req, res) => {
       body.entry[0].changes[0].value.messages[0]
     ) {
       const message = body.entry[0].changes[0].value.messages[0];
-      const customerPhone = "+" + message.from;
+      const customerPhone = "+" + normalizePhone(message.from);
       const customerName =
         body.entry[0].changes[0].value.contacts?.[0]?.profile?.name || `Customer (${customerPhone})`;
       const messageType = message.type;
@@ -148,6 +150,7 @@ webhookRouter.post("/whatsapp/webhook", async (req, res) => {
           customerMsg.aiExplanation =
             aiResult.explanation + (shouldAutoReply ? " (Confidence below reply threshold)" : " (Auto-reply disabled)");
         }
+        sseEmit("refresh", { source: "webhook", threadId: thread.id });
       } else {
         addLog("inbound", "WhatsApp Live Message (Non-Text)", true, `Incoming non-text payload type: "${messageType}"`, body);
       }
