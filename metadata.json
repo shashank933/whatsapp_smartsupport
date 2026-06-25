@@ -1,0 +1,6 @@
+{
+  "name": "WhatsApp Support Agent Hub",
+  "description": "An automated AI assistant dashboard for operating a WhatsApp Business account. Features automatic FAQ replies, simulated sandbox testing, tone tailoring, webhook logging, and a live WhatsApp Cloud API integration gateway.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
