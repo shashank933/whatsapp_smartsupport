@@ -4,10 +4,6 @@ import { addAppointment, getLlmProvider } from "../db/memoryStore";
 import { buildCustomerContext, buildContextPrompt } from "../db/sqliteStore";
 import * as fs from "fs";
 import * as path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const DOCS_DIR = path.join(process.cwd(), "docs");
 
 function loadDoc(filename: string): string {
@@ -75,7 +71,7 @@ async function generateGeminiContent(
 // -------------------------------------------------------------
 // Log File Helpers
 // -------------------------------------------------------------
-const LOG_DIR = path.join(__dirname, "..", "logs");
+const LOG_DIR = path.join(process.cwd(), "logs");
 const TRANSLATION_LOG = path.join(LOG_DIR, "translation-log.txt");
 
 export function ensureLogDir(): void {

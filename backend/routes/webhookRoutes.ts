@@ -11,8 +11,10 @@ import {
   sqliteAddMessage,
   sqliteGetMessagesByThreadId,
   sqliteUpdateThread,
+  sqliteUpsertContact,
 } from "../db/sqliteStore";
 import { generateAIResponseForMessage } from "../ai/responseEngine";
+import { syncContactToHubSpot } from "../integrations/hubspot";
 
 export const webhookRouter = Router();
 
@@ -74,6 +76,10 @@ webhookRouter.post("/whatsapp/webhook", async (req, res) => {
         addLog("inbound", "WhatsApp Live Message", true, `Live message: "${messageText}" from ${customerName}`, body);
 
         const thread = sqliteUpsertThread(customerPhone, customerName, messageText);
+        sqliteUpsertContact(customerPhone, customerName);
+        syncContactToHubSpot(customerPhone, customerName, messageText).catch((err) =>
+          console.error("[HubSpot] Sync failed:", err)
+        );
 
         const customerMsg: ChatMessage = {
           id: "msg_live_" + Date.now(),

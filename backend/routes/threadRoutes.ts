@@ -19,8 +19,13 @@ import {
   sqliteAddMessage,
   sqliteGetMessagesByThreadId,
   buildCustomerContext,
+  sqliteUpsertContact,
+  sqliteGetAllContacts,
+  sqliteArchiveThread,
+  sqliteDeleteThread,
 } from "../db/sqliteStore";
 import { generateAIResponseForMessage } from "../ai/responseEngine";
+import { syncContactToHubSpot } from "../integrations/hubspot";
 
 export const threadRouter = Router();
 
@@ -28,7 +33,8 @@ export const threadRouter = Router();
 // Thread Management
 // -------------------------------------------------------------
 threadRouter.get("/threads", (req, res) => {
-  res.json(sqliteGetAllThreads());
+  const status = req.query.status as string | undefined;
+  res.json(sqliteGetAllThreads(status));
 });
 
 threadRouter.post("/threads", (req, res) => {
@@ -84,7 +90,7 @@ threadRouter.post("/threads/:id/auto-reply", (req, res) => {
 // -------------------------------------------------------------
 threadRouter.post("/threads/:id/status", (req, res) => {
   const { status } = req.body;
-  if (!["open", "pending", "resolved"].includes(status)) {
+  if (!["open", "pending", "resolved", "archived"].includes(status)) {
     return res.status(400).json({ error: "Invalid status code." });
   }
   const updated = sqliteUpdateThread(req.params.id, { status });
@@ -92,6 +98,28 @@ threadRouter.post("/threads/:id/status", (req, res) => {
     return res.status(404).json({ error: "Thread not found." });
   }
   res.json({ success: true, thread: updated });
+});
+
+// -------------------------------------------------------------
+// Archive Thread
+// -------------------------------------------------------------
+threadRouter.post("/threads/:id/archive", (req, res) => {
+  const updated = sqliteArchiveThread(req.params.id);
+  if (!updated) {
+    return res.status(404).json({ error: "Thread not found." });
+  }
+  res.json({ success: true, thread: updated });
+});
+
+// -------------------------------------------------------------
+// Delete Thread
+// -------------------------------------------------------------
+threadRouter.delete("/threads/:id", (req, res) => {
+  const deleted = sqliteDeleteThread(req.params.id);
+  if (!deleted) {
+    return res.status(404).json({ error: "Thread not found." });
+  }
+  res.json({ success: true });
 });
 
 // -------------------------------------------------------------
@@ -185,6 +213,10 @@ threadRouter.post("/simulate-incoming", async (req, res) => {
   }
 
   const thread = sqliteUpsertThread(customerPhone, customerName, messageText);
+  sqliteUpsertContact(customerPhone, customerName);
+  syncContactToHubSpot(customerPhone, customerName, messageText).catch((err) =>
+    console.error("[HubSpot] Sync failed:", err)
+  );
 
   const customerMsg: ChatMessage = {
     id: "msg_cust_" + Date.now(),
@@ -274,4 +306,11 @@ threadRouter.get("/webhook-logs", (req, res) => {
 // -------------------------------------------------------------
 threadRouter.get("/appointments", (req, res) => {
   res.json(getAppointments());
+});
+
+// -------------------------------------------------------------
+// Contacts
+// -------------------------------------------------------------
+threadRouter.get("/contacts", (req, res) => {
+  res.json(sqliteGetAllContacts());
 });

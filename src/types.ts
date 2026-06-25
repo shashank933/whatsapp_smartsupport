@@ -21,11 +21,19 @@ export interface FAQItem {
   keywords: string[];
 }
 
+export interface Contact {
+  id: string;
+  phone: string;
+  name: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface ChatThread {
   id: string;
   customerPhone: string;
   customerName: string;
-  status: 'open' | 'pending' | 'resolved';
+  status: 'open' | 'pending' | 'resolved' | 'archived';
   lastMessageText: string;
   lastMessageTime: number;
   unreadCount: number;

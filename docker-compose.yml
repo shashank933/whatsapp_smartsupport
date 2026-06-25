@@ -1,0 +1,21 @@
+services:
+  app:
+    build: .
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - GEMINI_MODEL=gemini-flash-latest
+      - APP_URL=https://smartsupport.shashanktalapelliwar.cloud
+      - GEMINI_API_KEY=AQ.Ab8RN6KXTXiQZhCZgiesaaJY9r16OmVr7tjUyuQsnQmzytWNsQ
+      - DEEPSEEK_API_KEY=sk-298457359ee640b196546620bcc261da
+      - HUBSPOT_ACCESS_TOKEN=pat-eu1-f1737802-6084-483e-9978-18a0b1812317
+    restart: unless-stopped
+    volumes:
+      - backend-data:/app/backend/data
+      - logs-data:/app/logs
+
+volumes:
+  backend-data:
+  logs-data:

@@ -4,6 +4,7 @@ import fs from "fs";
 import {
   ChatThread,
   ChatMessage,
+  Contact,
   BusinessProfile,
   FAQItem,
 } from "../../src/types";
@@ -75,6 +76,20 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_threads_customerPhone ON threads(customerPhone)
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS contacts (
+    id TEXT PRIMARY KEY,
+    phone TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    createdAt INTEGER NOT NULL DEFAULT (unixepoch()),
+    updatedAt INTEGER NOT NULL DEFAULT (unixepoch())
+  )
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_contacts_phone ON contacts(phone)
+`);
+
 // -------------------------------------------------------------
 // Seed existing in-memory data if tables are empty
 // -------------------------------------------------------------
@@ -128,13 +143,20 @@ if (threadCount.cnt === 0 && msgCount === 0 && memoryThreads.length > 0) {
 // -------------------------------------------------------------
 // Thread Operations
 // -------------------------------------------------------------
-export function sqliteGetAllThreads(): ChatThread[] {
-  const rows = db.prepare(
-    `SELECT id, customerPhone, customerName, status, lastMessageText, lastMessageTime, unreadCount, autoReplyActive,
-            createdAt, updatedAt
-     FROM threads
-     ORDER BY lastMessageTime DESC`
-  ).all() as any[];
+export function sqliteGetAllThreads(status?: string): ChatThread[] {
+  let query = `SELECT id, customerPhone, customerName, status, lastMessageText, lastMessageTime, unreadCount, autoReplyActive,
+          createdAt, updatedAt
+   FROM threads`;
+  const params: any[] = [];
+
+  if (status) {
+    query += ` WHERE status = ?`;
+    params.push(status);
+  }
+
+  query += ` ORDER BY lastMessageTime DESC`;
+
+  const rows = db.prepare(query).all(...params) as any[];
 
   return rows.map((r) => ({
     id: r.id,
@@ -227,6 +249,21 @@ export function sqliteUpdateThread(threadId: string, updates: Partial<Pick<ChatT
 
   db.prepare(`UPDATE threads SET ${setClauses.join(", ")} WHERE id = ?`).run(...values);
   return sqliteGetThreadById(threadId);
+}
+
+export function sqliteArchiveThread(threadId: string): ChatThread | undefined {
+  return sqliteUpdateThread(threadId, { status: "archived" });
+}
+
+export function sqliteDeleteThread(threadId: string): boolean {
+  const existing = sqliteGetThreadById(threadId);
+  if (!existing) return false;
+
+  db.prepare(`DELETE FROM messages WHERE threadId = ?`).run(threadId);
+  db.prepare(`DELETE FROM threads WHERE id = ?`).run(threadId);
+
+  console.log(`[SQLite] Thread deleted: ${threadId} (${existing.customerName})`);
+  return true;
 }
 
 export function sqliteUpsertThread(phone: string, name: string, messageText: string): ChatThread {
@@ -410,4 +447,70 @@ export function buildContextPrompt(context: CustomerContext): string {
   }
 
   return prompt;
+}
+
+// -------------------------------------------------------------
+// Contact Operations
+// -------------------------------------------------------------
+export function sqliteGetAllContacts(): Contact[] {
+  const rows = db.prepare(
+    `SELECT id, phone, name, createdAt, updatedAt FROM contacts ORDER BY name ASC`
+  ).all() as any[];
+
+  return rows.map((r) => ({
+    id: r.id,
+    phone: r.phone,
+    name: r.name,
+    createdAt: r.createdAt,
+    updatedAt: r.updatedAt,
+  }));
+}
+
+export function sqliteGetContactByPhone(phone: string): Contact | undefined {
+  const row = db.prepare(
+    `SELECT id, phone, name, createdAt, updatedAt FROM contacts WHERE phone = ?`
+  ).get(phone) as any | undefined;
+
+  if (!row) return undefined;
+  return {
+    id: row.id,
+    phone: row.phone,
+    name: row.name,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
+export function sqliteUpsertContact(phone: string, name: string): Contact {
+  const existing = sqliteGetContactByPhone(phone);
+  const now = Date.now();
+
+  if (existing) {
+    db.prepare(
+      `UPDATE contacts SET name = ?, updatedAt = ? WHERE phone = ?`
+    ).run(name, now, phone);
+    return sqliteGetContactByPhone(phone)!;
+  }
+
+  const contact: Contact = {
+    id: "contact_" + Date.now(),
+    phone,
+    name,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  db.prepare(
+    `INSERT INTO contacts (id, phone, name, createdAt, updatedAt)
+     VALUES (@id, @phone, @name, @createdAt, @updatedAt)`
+  ).run({
+    id: contact.id,
+    phone: contact.phone,
+    name: contact.name,
+    createdAt: contact.createdAt,
+    updatedAt: contact.updatedAt,
+  });
+
+  console.log(`[Contacts] New contact created: ${name} (${phone})`);
+  return contact;
 }
