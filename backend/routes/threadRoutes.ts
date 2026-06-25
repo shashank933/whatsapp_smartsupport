@@ -158,7 +158,7 @@ threadRouter.post("/threads/:id/send", async (req, res) => {
     !memoryWhatsAppConfig.phoneNumberId.startsWith("12345")
   ) {
     try {
-      const url = `https://graph.facebook.com/v20.0/${memoryWhatsAppConfig.phoneNumberId}/messages`;
+      const url = `https://graph.facebook.com/v25.0/${memoryWhatsAppConfig.phoneNumberId}/messages`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -167,10 +167,9 @@ threadRouter.post("/threads/:id/send", async (req, res) => {
         },
         body: JSON.stringify({
           messaging_product: "whatsapp",
-          recipient_type: "individual",
           to: thread.customerPhone.replace(/[^0-9+]/g, ""),
           type: "text",
-          text: { preview_url: false, body: content },
+          text: { body: content },
         }),
       });
       const data = await response.json();

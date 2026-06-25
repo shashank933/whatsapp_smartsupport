@@ -7,6 +7,7 @@ import {
   Contact,
   BusinessProfile,
   FAQItem,
+  WhatsAppConfig,
 } from "../../src/types";
 import {
   memoryThreads,
@@ -14,6 +15,7 @@ import {
   memoryAppointments,
   memoryFaqs,
   memoryProfile,
+  memoryWhatsAppConfig,
 } from "../db/memoryStore";
 
 // -------------------------------------------------------------
@@ -89,6 +91,40 @@ db.exec(`
 db.exec(`
   CREATE INDEX IF NOT EXISTS idx_contacts_phone ON contacts(phone)
 `);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  )
+`);
+
+// -------------------------------------------------------------
+// Settings Persistence
+// -------------------------------------------------------------
+export function sqliteLoadWhatsAppConfig(): WhatsAppConfig | null {
+  try {
+    const row = db.prepare(`SELECT value FROM settings WHERE key = ?`).get("whatsapp_config") as any;
+    if (row?.value) {
+      const parsed = JSON.parse(row.value);
+      if (parsed.phoneNumberId && parsed.accessToken && parsed.verifyToken) {
+        return parsed as WhatsAppConfig;
+      }
+    }
+  } catch (e) {
+    console.warn("[SQLite] Failed to load WhatsApp config:", e);
+  }
+  return null;
+}
+
+export function sqliteSaveWhatsAppConfig(config: WhatsAppConfig): void {
+  const json = JSON.stringify(config);
+  db.prepare(
+    `INSERT INTO settings (key, value) VALUES (?, ?)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value`
+  ).run("whatsapp_config", json);
+  console.log("[SQLite] WhatsApp config saved.");
+}
 
 // -------------------------------------------------------------
 // Seed existing in-memory data if tables are empty

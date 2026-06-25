@@ -115,7 +115,7 @@ webhookRouter.post("/whatsapp/webhook", async (req, res) => {
 
           if (memoryWhatsAppConfig.phoneNumberId && memoryWhatsAppConfig.accessToken) {
             try {
-              const url = `https://graph.facebook.com/v20.0/${memoryWhatsAppConfig.phoneNumberId}/messages`;
+              const url = `https://graph.facebook.com/v25.0/${memoryWhatsAppConfig.phoneNumberId}/messages`;
               const response = await fetch(url, {
                 method: "POST",
                 headers: {
@@ -124,10 +124,9 @@ webhookRouter.post("/whatsapp/webhook", async (req, res) => {
                 },
                 body: JSON.stringify({
                   messaging_product: "whatsapp",
-                  recipient_type: "individual",
                   to: customerPhone.replace("+", ""),
                   type: "text",
-                  text: { preview_url: false, body: aiResult.replyText },
+                  text: { body: aiResult.replyText },
                 }),
               });
               const outputData = await response.json();

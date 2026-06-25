@@ -8,6 +8,7 @@ import {
   setLlmProvider,
   type LlmProvider,
 } from "../db/memoryStore";
+import { sqliteSaveWhatsAppConfig } from "../db/sqliteStore";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -58,6 +59,7 @@ adminRouter.post("/whatsapp-config", (req, res) => {
     accessToken: accessToken || "",
     verifyToken: verifyToken || "",
   });
+  sqliteSaveWhatsAppConfig(memoryWhatsAppConfig);
   res.json({ success: true, config: memoryWhatsAppConfig });
 });
 

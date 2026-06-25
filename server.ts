@@ -47,6 +47,14 @@ async function bootstrapServer() {
     import("./backend/routes/webhookRoutes"),
   ]);
 
+  const { memoryWhatsAppConfig, updateWhatsAppConfig } = await import("./backend/db/memoryStore");
+  const { sqliteLoadWhatsAppConfig, sqliteSaveWhatsAppConfig } = await import("./backend/db/sqliteStore");
+  const savedConfig = sqliteLoadWhatsAppConfig();
+  if (savedConfig) {
+    updateWhatsAppConfig(savedConfig);
+    console.log("[Server] Loaded WhatsApp config from database.");
+  }
+
   app.use("/api", knowledgeRouter);
   app.use("/api", adminRouter);
   app.use("/api", threadRouter);
