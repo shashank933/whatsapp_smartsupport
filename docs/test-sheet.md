@@ -15,9 +15,9 @@
 - AI detects booking intent
 - Extracts: name="Fatima", day="Sunday", time="10:00 AM"
 - Confirms appointment with full details
-- Appointment saved to `appointments.json`
+- Appointment saved to SQLite database
 
-**Pass Criteria:** ✅ Confirmation message shows name, day, time, price (15 KWD), clinic name. Appointment logged to JSON file.
+**Pass Criteria:** ✅ Confirmation message shows name, day, time, price (15 KWD), clinic name. Appointment persisted in SQLite.
 
 ---
 
@@ -108,4 +108,4 @@ All tests run through the Simulator:
 2. Click the preset button for each test scenario, OR manually fill in the fields
 3. Click **Dispatch Incoming WhatsApp**
 4. Verify the AI response in the center chat panel
-5. Check `appointments.json` for Test 1 (booking should appear)
+5. Check the Dashboard → Appointments tab for Test 1 (booking should appear)

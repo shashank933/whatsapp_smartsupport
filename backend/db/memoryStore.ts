@@ -10,6 +10,26 @@ import {
 import fs from "fs";
 import path from "path";
 
+function loadPromptRules(): string {
+  try {
+    const docPath = path.join(process.cwd(), "docs", "prompt-behavior-rules.md");
+    if (fs.existsSync(docPath)) {
+      const raw = fs.readFileSync(docPath, "utf-8");
+      const stripped = raw
+        .replace(/^###.*$/gm, "")
+        .replace(/^##.*$/gm, "")
+        .replace(/^# .*$/gm, "")
+        .replace(/^\s*$/gm, "")
+        .replace(/```/g, "")
+        .trim();
+      return stripped;
+    }
+  } catch (e) {
+    console.error("Failed to load prompt-behavior-rules.md:", e);
+  }
+  return "";
+}
+
 // -------------------------------------------------------------
 // In-Memory Database — Bright Smile Dental Clinic
 // -------------------------------------------------------------
@@ -44,12 +64,22 @@ export let memoryFaqs: FAQItem[] = [
   },
 ];
 
+const baseSystemContext =
+  "Bright Smile Dental Clinic is a trusted dental practice in Salmiya, Kuwait. We are open Saturday to Thursday, 9 AM to 9 PM. Closed Friday. Services: Check-up 15 KWD, Cleaning 25 KWD, Whitening 80 KWD, Filling from 30 KWD. We NEVER give medical or clinical advice — patients must see a dentist in person for any diagnosis or treatment recommendations. For emergencies (severe pain, bleeding, swelling, trauma), we direct patients to seek immediate emergency care and flag the case for a human dentist to follow up. We reply in the same language the patient uses. Our tone is warm, professional, and caring.";
+
+function buildSystemContext(): string {
+  const rules = loadPromptRules();
+  if (rules) {
+    return baseSystemContext + "\n\nADDITIONAL BEHAVIOUR RULES:\n" + rules;
+  }
+  return baseSystemContext;
+}
+
 export let memoryProfile: BusinessProfile = {
   name: "Bright Smile Dental Clinic",
   industry: "Dental Care",
   replyTone: "supportive",
-  systemContext:
-    "Bright Smile Dental Clinic is a trusted dental practice in Salmiya, Kuwait. We are open Saturday to Thursday, 9 AM to 9 PM. Closed Friday. Services: Check-up 15 KWD, Cleaning 25 KWD, Whitening 80 KWD, Filling from 30 KWD. We NEVER give medical or clinical advice — patients must see a dentist in person for any diagnosis or treatment recommendations. For emergencies (severe pain, bleeding, swelling, trauma), we direct patients to seek immediate emergency care and flag the case for a human dentist to follow up. We reply in the same language the patient uses. Our tone is warm, professional, and caring.",
+  systemContext: buildSystemContext(),
   autoReplyEnabled: true,
   minConfidence: 0.7,
 };
@@ -58,7 +88,7 @@ export let memoryWhatsAppConfig: WhatsAppConfig = {
   phoneNumberId: "1234567890123",
   businessAccountId: "9876543210987",
   accessToken: "EAAWf...",
-  verifyToken: "bright_smile_verify_secure_token",
+  verifyToken: process.env.WEBHOOK_VERIFY_TOKEN || "bright_smile_verify_secure_token",
 };
 
 export let memoryCannedResponses: CannedResponse[] = [
@@ -93,67 +123,6 @@ export function getLlmProvider(): LlmProvider {
 export function setLlmProvider(provider: LlmProvider): void {
   currentLlmProvider = provider;
   console.log(`LLM provider switched to: ${provider}`);
-}
-
-// -------------------------------------------------------------
-// Appointment Booking Log (persisted to disk)
-// -------------------------------------------------------------
-export interface Appointment {
-  id: string;
-  timestamp: number;
-  customerName: string;
-  customerPhone: string;
-  preferredDay: string;
-  preferredTime: string;
-  status: "confirmed" | "pending";
-}
-
-const APPOINTMENTS_FILE = path.join(process.cwd(), "appointments.json");
-
-function loadAppointments(): Appointment[] {
-  try {
-    if (fs.existsSync(APPOINTMENTS_FILE)) {
-      const raw = fs.readFileSync(APPOINTMENTS_FILE, "utf-8");
-      return JSON.parse(raw) as Appointment[];
-    }
-  } catch (e) {
-    console.error("Failed to load appointments file:", e);
-  }
-  return [];
-}
-
-function saveAppointments(appointments: Appointment[]): void {
-  try {
-    fs.writeFileSync(APPOINTMENTS_FILE, JSON.stringify(appointments, null, 2), "utf-8");
-  } catch (e) {
-    console.error("Failed to save appointments file:", e);
-  }
-}
-
-export let memoryAppointments: Appointment[] = loadAppointments();
-
-export function addAppointment(
-  customerName: string,
-  customerPhone: string,
-  preferredDay: string,
-  preferredTime: string
-): Appointment {
-  const appt: Appointment = {
-    id: "appt_" + Date.now(),
-    timestamp: Date.now(),
-    customerName,
-    customerPhone,
-    preferredDay,
-    preferredTime,
-    status: "confirmed",
-  };
-  memoryAppointments.unshift(appt);
-  saveAppointments(memoryAppointments);
-  return appt;
-}
-
-export function getAppointments(): Appointment[] {
-  return [...memoryAppointments];
 }
 
 export let memoryThreads: ChatThread[] = [
@@ -253,7 +222,7 @@ export let memoryWebhookLogs: WebhookLog[] = [
       {
         mode: "subscribe",
         challenge: "11524312",
-        verify_token: "bright_smile_verify_secure_token",
+        verify_token: "your_webhook_verify_token",
       },
       null,
       2

@@ -162,7 +162,17 @@ generateAIResponseForMessage(messageText, history, memoryProfile, memoryFaqs, ph
   │       Returns emergency redirect (confidence=1.0, isEmergency=true)
   │
   ├─ [No emergency] Construct LLM Prompt             [responseEngine.ts:508]
-  │   Includes: clinic info, FAQs, conversation history, context, appointments
+  │   Includes: clinic info, FAQs, conversation history, customer context, appointments
+  │   Profile.systemContext is loaded at startup from:
+  │     ├─ buildSystemContext()                         [memoryStore.ts:70]
+  │     │   ├─ baseSystemContext (hardcoded)            [memoryStore.ts:67]
+  │     │   └─ loadPromptRules()                        [memoryStore.ts:13]
+  │     │       Reads docs/prompt-behavior-rules.md, strips markdown headers/fences
+  │     │       Appends as "ADDITIONAL BEHAVIOUR RULES:" section
+  │     │
+  │     └─ Injected into LLM prompt as profile.systemContext
+  │         Provides emergency detection, medical advice refusal, booking flow,
+  │         FAQ matching, language detection, and fallback behaviour rules
   │
   ├─ Router: getLlmProvider()                        [memoryStore.ts:89]
   │   Returns "gemini", "deepseek", or "rule"
@@ -387,6 +397,13 @@ applyInputGuardrails()           [guardrails.ts:198]
                                                           │
                                                           ▼
                                               Emergency Check → LLM → Booking/Cancel
+                                              │
+                                              │  LLM Prompt includes profile.systemContext
+                                              │  which is built at startup by:
+                                              │  ├─ loadPromptRules()          [memoryStore.ts:13]
+                                              │  │   Reads & strips docs/prompt-behavior-rules.md
+                                              │  └─ buildSystemContext()       [memoryStore.ts:70]
+                                              │      Merges base context + .md rule content
                                                           │
                                                           ▼
                                         applyOutputGuardrails()     [guardrails.ts:237]
@@ -422,6 +439,8 @@ Both trails converge on the same core pipeline:
 | `containsAny()` | `backend/ai/responseEngine.ts` | 165 |
 | `buildCustomerContext()` | `backend/db/sqliteStore.ts` | 409 |
 | `buildContextPrompt()` | `backend/db/sqliteStore.ts` | 477 |
+| `loadPromptRules()` | `backend/db/memoryStore.ts` | 13 |
+| `buildSystemContext()` | `backend/db/memoryStore.ts` | 70 |
 | `syncContactToHubSpot()` | `backend/integrations/hubspot.ts` | 93 |
 | `detectContactReason()` | `backend/integrations/hubspot.ts` | 7 |
 | `searchHubSpotContact()` | `backend/integrations/hubspot.ts` | 49 |
@@ -453,10 +472,11 @@ Both trails converge on the same core pipeline:
 | `backend/routes/threadRoutes.ts:252` | `POST /api/simulate-incoming` handler |
 | `backend/routes/webhookRoutes.ts:26,58` | `GET` verification + `POST` event handler |
 | `backend/utils/phone.ts:1` | `normalizePhone()` |
-| `backend/db/memoryStore.ts:57-62,47-55,89-91,267` | In-memory config, profile, LLM provider, webhook logs |
+| `backend/db/memoryStore.ts:13-31,67-76,78-86,109-112,289-293` | In-memory config, profile (with `.md` rule loading), LLM provider, webhook logs |
 | `backend/db/sqliteStore.ts` | All SQLite persistence (threads, messages, contacts, appointments) |
 | `backend/ai/responseEngine.ts` | Full AI pipeline (translation, LLM, emergency check, booking) |
 | `backend/ai/guardrails.ts` | Input/output guardrails (prompt injection, abuse, off-topic, PII, medical advice, confidence, sanitization) |
 | `backend/integrations/hubspot.ts` | HubSpot CRM sync |
 | `backend/sse.ts:5,20` | SSE connection and broadcast |
 | `backend/test-webhook-e2e.ts:250-276` | E2E test calling simulate endpoint |
+| `docs/prompt-behavior-rules.md` | Behaviour rules loaded at startup into `systemContext`; synced by admin profile POST |
