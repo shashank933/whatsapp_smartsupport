@@ -40,11 +40,12 @@ async function bootstrapServer() {
   const port = await findAvailablePort(DEFAULT_PORT);
 
   // Import routes only after dotenv has populated process.env.
-  const [{ knowledgeRouter }, { adminRouter }, { threadRouter }, { webhookRouter }] = await Promise.all([
+  const [{ knowledgeRouter }, { adminRouter }, { threadRouter }, { webhookRouter }, { authRouter }] = await Promise.all([
     import("./backend/routes/knowledgeRoutes"),
     import("./backend/routes/adminRoutes"),
     import("./backend/routes/threadRoutes"),
     import("./backend/routes/webhookRoutes"),
+    import("./backend/routes/authRoutes"),
   ]);
 
   const { memoryWhatsAppConfig, updateWhatsAppConfig } = await import("./backend/db/memoryStore");
@@ -59,6 +60,7 @@ async function bootstrapServer() {
   app.use("/api", adminRouter);
   app.use("/api", threadRouter);
   app.use("/api", webhookRouter);
+  app.use("/api", authRouter);
 
   if (process.env.NODE_ENV !== "production") {
     const viteInstance = await createViteServer({

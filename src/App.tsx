@@ -3,32 +3,89 @@ import {
   Send, Bot, Sparkles, Plus, Trash, Check, Settings, Phone,
   AlertCircle, Terminal, Search, X, MessageSquare, RefreshCw,
   BookOpen, Cpu, CheckSquare, LogIn, Eye, EyeOff, Lock, LogOut,
-  LayoutDashboard, CalendarDays, Users, Clock
+  LayoutDashboard, CalendarDays, Users, Clock, UserPlus
 } from "lucide-react";
 import {
   WhatsAppConfig, BusinessProfile, FAQItem, ChatThread,
-  ChatMessage, CannedResponse, WebhookLog, Contact
+  ChatMessage, CannedResponse, WebhookLog, Contact, User
 } from "./types";
 
-function LoginPage({ onLogin }: { onLogin: () => void }) {
+function AuthPage({ onLogin }: { onLogin: () => void }) {
+  const [isRegister, setIsRegister] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const resetForm = () => {
+    setName("");
+    setEmail("");
+    setUsername("");
+    setPassword("");
+    setError("");
+    setSuccess("");
+  };
+
+  const toggleMode = () => {
+    setIsRegister(!isRegister);
+    resetForm();
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
     setIsLoading(true);
-    setTimeout(() => {
-      if (username === "admin" && password === "admin123") {
+
+    try {
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, username, password }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setSuccess("Account created! You can now sign in.");
+        setIsRegister(false);
+      } else {
+        setError(data.error || "Registration failed.");
+      }
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setIsLoading(true);
+
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
         onLogin();
       } else {
-        setError("Invalid username or password. Please try again.");
+        setError(data.error || "Invalid username or password.");
       }
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
       setIsLoading(false);
-    }, 600);
+    }
   };
 
   return (
@@ -36,15 +93,17 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-emerald-500 mb-4 shadow-lg shadow-cyan-500/20">
-            <span className="text-3xl">🦷</span>
+            <Bot className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Bright Smile</h1>
+          <h1 className="text-2xl font-bold text-white tracking-tight">SmartSupport</h1>
           <p className="text-xs text-slate-400 mt-1">WhatsApp AI Agent Portal</p>
         </div>
-        <form onSubmit={handleSubmit} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5 shadow-2xl">
+        <form onSubmit={isRegister ? handleRegister : handleLogin} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-2xl">
           <div className="text-center">
-            <h2 className="text-sm font-semibold text-slate-200">Agent Login</h2>
-            <p className="text-[10px] text-slate-500 mt-0.5">Sign in to access the dashboard</p>
+            <h2 className="text-sm font-semibold text-slate-200">{isRegister ? "Create Account" : "Agent Login"}</h2>
+            <p className="text-[10px] text-slate-500 mt-0.5">
+              {isRegister ? "Register to access the dashboard" : "Sign in to access the dashboard"}
+            </p>
           </div>
           {error && (
             <div className="bg-rose-500/10 border border-rose-500/30 rounded-lg p-3 flex items-center gap-2 text-xs text-rose-400">
@@ -52,11 +111,31 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
               <span>{error}</span>
             </div>
           )}
+          {success && (
+            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 flex items-center gap-2 text-xs text-emerald-400">
+              <Check className="w-4 h-4 shrink-0" />
+              <span>{success}</span>
+            </div>
+          )}
+          {isRegister && (
+            <>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Full Name</label>
+                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter your full name" autoFocus
+                  className="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition" required />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Email</label>
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email"
+                  className="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition" required />
+              </div>
+            </>
+          )}
           <div className="space-y-1.5">
             <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Username</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500"><Lock className="w-3.5 h-3.5" /></span>
-              <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Enter username" autoFocus
+              <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Enter username" autoFocus={!isRegister}
                 className="w-full pl-9 pr-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition" required />
             </div>
           </div>
@@ -73,9 +152,22 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
           </div>
           <button type="submit" disabled={isLoading}
             className="w-full py-2.5 bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-semibold rounded-lg text-sm transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-cyan-500/10">
-            {isLoading ? <><LoaderIcon className="w-4 h-4 animate-spin" /><span>Signing in...</span></> : <><LogIn className="w-4 h-4" /><span>Sign In</span></>}
+            {isLoading ? (
+              <><RefreshCw className="w-4 h-4 animate-spin" /><span>{isRegister ? "Creating Account..." : "Signing in..."}</span></>
+            ) : isRegister ? (
+              <><UserPlus className="w-4 h-4" /><span>Create Account</span></>
+            ) : (
+              <><LogIn className="w-4 h-4" /><span>Sign In</span></>
+            )}
           </button>
-          <p className="text-center text-[10px] text-slate-600">Bright Smile Dental Clinic · Salmiya, Kuwait</p>
+          <p className="text-center text-[10px] text-slate-600">
+            {isRegister ? (
+              <>Already have an account? <button type="button" onClick={toggleMode} className="text-cyan-400 hover:text-cyan-300 transition underline">Sign in</button></>
+            ) : (
+              <>Don't have an account? <button type="button" onClick={toggleMode} className="text-cyan-400 hover:text-cyan-300 transition underline">Register</button></>
+            )}
+          </p>
+          <p className="text-center text-[10px] text-slate-600">WhatsApp SmartSupport · AI-Powered Customer Service</p>
         </form>
       </div>
     </div>
@@ -89,12 +181,12 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [isLlmSaving, setIsLlmSaving] = useState(false);
 
   const [profile, setProfile] = useState<BusinessProfile>({
-    name: "Bright Smile Dental Clinic", industry: "Dental Care", replyTone: "supportive",
-    systemContext: "Bright Smile Dental Clinic is a trusted dental practice in Salmiya, Kuwait. We are open Saturday to Thursday, 9 AM to 9 PM. Closed Friday. Services: Check-up 15 KWD, Cleaning 25 KWD, Whitening 80 KWD, Filling from 30 KWD. We NEVER give medical or clinical advice — patients must see a dentist in person. For emergencies, direct to hospital ER and flag for human follow-up. Reply in Arabic or English depending on the patient's language.",
+    name: "WhatsApp SmartSupport", industry: "Restaurant", replyTone: "hospitable",
+    systemContext: "We are a restaurant serving delicious meals to our guests. We operate Sunday to Thursday, 12:00 PM to 11:00 PM, and Friday to Saturday, 1:00 PM to 11:30 PM. We offer dine-in, takeaway, and delivery services. We reply in the same language the customer uses. Our tone is warm, hospitable, and inviting.",
     autoReplyEnabled: true, minConfidence: 0.70
   });
 
-  const [waConfig, setWaConfig] = useState<WhatsAppConfig>({ phoneNumberId: "", businessAccountId: "", accessToken: "", verifyToken: "bright_smile_verify_secure_token" });
+  const [waConfig, setWaConfig] = useState<WhatsAppConfig>({ phoneNumberId: "", businessAccountId: "", accessToken: "", verifyToken: "smartsupport_verify_secure_token" });
   const [faqs, setFaqs] = useState<FAQItem[]>([]);
   const [cannedResponses, setCannedResponses] = useState<CannedResponse[]>([]);
   const [threads, setThreads] = useState<ChatThread[]>([]);
@@ -111,7 +203,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [faqQuestion, setFaqQuestion] = useState(""); const [faqAnswer, setFaqAnswer] = useState(""); const [faqKeywords, setFaqKeywords] = useState("");
   const [cannedShortcut, setCannedShortcut] = useState(""); const [cannedText, setCannedText] = useState("");
   const [simPhone, setSimPhone] = useState("+965 5551-2345"); const [simName, setSimName] = useState("Fatima Al-Ali");
-  const [simMessage, setSimMessage] = useState("Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM.");
+  const [simMessage, setSimMessage] = useState("Hi, my name is Fatima. I'd like to book an appointment for Monday at 10 AM.");
   const [isSimulatingMessage, setIsSimulatingMessage] = useState(false);
   const [isDrafting, setIsDrafting] = useState(false); const [isSending, setIsSending] = useState(false);
   const [isConfigSaving, setIsConfigSaving] = useState(false); const [isProfileSaving, setIsProfileSaving] = useState(false);
@@ -237,11 +329,11 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const selectedThread = threads.find(t => t.id === selectedThreadId);
 
   const loadSimulatorPreset = (type: string) => {
-    if (type === 'booking') { setSimPhone("+965 5551-2345"); setSimName("Fatima Al-Ali"); setSimMessage("Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."); }
-    else if (type === 'arabic') { setSimPhone("+965 9988-7766"); setSimName("Mohammed Al-Rashed"); setSimMessage("السلام عليكم، كم سعر تبييض الأسنان؟"); }
-    else if (type === 'arabicBooking') { setSimPhone("+965 5551-9876"); setSimName("Fatima"); setSimMessage("مرحباً، اسمي فاطمة. أود حجز موعد للفحص يوم الأحد الساعة العاشرة صباحاً"); }
-    else if (type === 'medical') { setSimPhone("+965 6677-8899"); setSimName("Noor Al-Sabah"); setSimMessage("I have pain in my gums since 2 weeks, do you think I need antibiotics?"); }
-    else if (type === 'emergency') { setSimPhone("+965 5123-4567"); setSimName("Karim Hassan"); setSimMessage("Help! My tooth just broke and I am bleeding a lot, it hurts so bad."); }
+    if (type === 'booking') { setSimPhone("+965 5551-2345"); setSimName("Fatima Al-Ali"); setSimMessage("Hi, my name is Fatima. I'd like to book an appointment for Monday at 10 AM."); }
+    else if (type === 'arabic') { setSimPhone("+965 9988-7766"); setSimName("Mohammed Al-Rashed"); setSimMessage("السلام عليكم، ما هي ساعات العمل؟"); }
+    else if (type === 'arabicBooking') { setSimPhone("+965 5551-9876"); setSimName("Fatima"); setSimMessage("مرحباً، اسمي فاطمة. أود حجز موعد يوم الاثنين الساعة العاشرة صباحاً"); }
+    else if (type === 'faq') { setSimPhone("+965 6677-8899"); setSimName("Noor Al-Sabah"); setSimMessage("What services do you offer? I need help with my account."); }
+    else if (type === 'offtopic') { setSimPhone("+965 5123-4567"); setSimName("Karim Hassan"); setSimMessage("I want to order a pizza with extra cheese and pepperoni."); }
   };
 
   const formatTime = (ts: number) => new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -253,7 +345,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <div className="bg-cyan-500 text-slate-950 p-1 rounded-md flex items-center justify-center font-bold"><Phone className="w-3.5 h-3.5" /></div>
-            <span className="font-semibold text-sm tracking-tight text-white">🦷 Bright Smile</span>
+            <span className="font-semibold text-sm tracking-tight text-white">SmartSupport</span>
           </div>
           <span className="text-[10px] text-slate-500 font-mono hidden sm:inline">WhatsApp AI Agent Portal</span>
           <button
@@ -285,12 +377,12 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         <div className="p-4 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="bg-cyan-500 text-slate-950 p-1.5 rounded-lg flex items-center justify-center font-bold"><Phone className="w-4 h-4" /></div>
-            <div><h1 className="font-semibold text-sm tracking-tight text-white m-0">🦷 Bright Smile</h1><span className="text-[10px] text-cyan-400 font-mono flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse"></span>ACTIVE</span></div>
+            <div><h1 className="font-semibold text-sm tracking-tight text-white m-0">SmartSupport</h1><span className="text-[10px] text-cyan-400 font-mono flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse"></span>ACTIVE</span></div>
           </div>
           <button onClick={() => { fetchThreads(); fetchLogs(); triggerNotification("Dashboard refreshed."); }} className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition"><RefreshCw className="w-4 h-4" /></button>
         </div>
         <div className="p-3 border-b border-slate-800 space-y-2">
-          <div className="relative"><span className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-500"><Search className="w-3.5 h-3.5" /></span><input type="text" placeholder="Search patient or number..." value={threadSearch} onChange={(e) => setThreadSearch(e.target.value)} className="w-full text-xs pl-8 pr-3 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-cyan-500" /></div>
+          <div className="relative"><span className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-500"><Search className="w-3.5 h-3.5" /></span><input type="text" placeholder="Search customer or number..." value={threadSearch} onChange={(e) => setThreadSearch(e.target.value)} className="w-full text-xs pl-8 pr-3 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-cyan-500" /></div>
           <div className="grid grid-cols-2 gap-1 bg-slate-900 p-0.5 rounded border border-slate-800">
             <button onClick={() => setThreadStatusFilter('active')} className={`py-1 text-[11px] font-medium rounded transition ${threadStatusFilter === 'active' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'}`}>Active ({threads.filter(t => t.status === 'open' || t.status === 'pending').length})</button>
             <button onClick={() => setThreadStatusFilter('resolved')} className={`py-1 text-[11px] font-medium rounded transition ${threadStatusFilter === 'resolved' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'}`}>Resolved ({threads.filter(t => t.status === 'resolved').length})</button>
@@ -317,7 +409,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             })
           )}
         </div>
-        <div className="p-3 bg-slate-950 border-t border-slate-900 text-[10px] text-slate-500 flex items-center justify-between"><span className="truncate">Bright Smile Dental — Salmiya, Kuwait</span><span className="bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800 uppercase font-mono">v1.0</span></div>
+        <div className="p-3 bg-slate-950 border-t border-slate-900 text-[10px] text-slate-500 flex items-center justify-between"><span className="truncate">WhatsApp SmartSupport</span><span className="bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800 uppercase font-mono">v1.0</span></div>
       </div>
 
       {/* CENTER PANEL */}
@@ -345,7 +437,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
               <button type="submit" disabled={isSending || !composeText.trim()} className="px-4 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg flex items-center justify-center text-xs font-semibold gap-1.5 transition disabled:opacity-50">{isSending ? <LoaderIcon className="w-3.5 h-3.5 animate-spin" /> : <><span>Send</span><Send className="w-3.5 h-3.5" /></>}</button>
             </form>
           </div>
-        </>) : (<div className="flex-1 flex flex-col items-center justify-center text-center p-8"><Bot className="w-16 h-16 text-cyan-500 stroke-1 mb-4" /><h2 className="text-lg font-bold text-white">Bright Smile Dental — WhatsApp Agent</h2><p className="text-xs text-slate-400 max-w-sm mt-1">Select a patient thread from the left panel, or use the Simulator tab to send a test message.</p></div>)}
+        </>) : (<div className="flex-1 flex flex-col items-center justify-center text-center p-8"><Bot className="w-16 h-16 text-cyan-500 stroke-1 mb-4" /><h2 className="text-lg font-bold text-white">SmartSupport — WhatsApp Agent</h2><p className="text-xs text-slate-400 max-w-sm mt-1">Select a customer thread from the left panel, or use the Simulator tab to send a test message.</p></div>)}
       </div>
 
       {/* RIGHT PANEL */}
@@ -359,10 +451,10 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {activeTab === 'simulator' && (
             <div className="space-y-4">
-              <div><h3 className="text-xs font-bold text-white tracking-wider uppercase mb-1">🦷 Patient Simulator</h3><p className="text-[11px] text-slate-400 leading-relaxed">Simulate incoming WhatsApp messages from patients. Test the AI agent's responses for bookings, Arabic queries, medical advice refusal, and emergencies.</p></div>
-              <div className="space-y-1.5 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800"><span className="text-[10px] font-semibold text-slate-400 block mb-1">🦷 Test Scenarios:</span><div className="grid grid-cols-2 gap-1.5"><button type="button" onClick={() => loadSimulatorPreset('booking')} className="p-1.5 bg-slate-950 hover:bg-slate-800 rounded border border-slate-800 text-[10px] text-slate-200 transition text-left leading-tight">📋 Normal Booking</button><button type="button" onClick={() => loadSimulatorPreset('arabic')} className="p-1.5 bg-slate-950 hover:bg-slate-800 rounded border border-slate-800 text-[10px] text-slate-200 transition text-left leading-tight">🇰🇼 Arabic Inquiry</button><button type="button" onClick={() => loadSimulatorPreset('arabicBooking')} className="p-1.5 bg-slate-950 hover:bg-slate-800 rounded border border-slate-800 text-[10px] text-slate-200 transition text-left leading-tight">👩🏽 Arabic Booking</button><button type="button" onClick={() => loadSimulatorPreset('medical')} className="p-1.5 bg-slate-950 hover:bg-slate-800 rounded border border-slate-800 text-[10px] text-slate-200 transition text-left leading-tight">🩺 Medical Advice</button><button type="button" onClick={() => loadSimulatorPreset('emergency')} className="p-1.5 bg-slate-950 hover:bg-slate-800 rounded border border-slate-800 text-[10px] text-slate-200 transition text-left leading-tight">🚨 Emergency</button></div></div>
+              <div><h3 className="text-xs font-bold text-white tracking-wider uppercase mb-1">Customer Simulator</h3><p className="text-[11px] text-slate-400 leading-relaxed">Simulate incoming WhatsApp messages from customers. Test the AI agent's responses for bookings, Arabic queries, FAQ matching, and general inquiries.</p></div>
+              <div className="space-y-1.5 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800"><span className="text-[10px] font-semibold text-slate-400 block mb-1">Test Scenarios:</span><div className="grid grid-cols-2 gap-1.5"><button type="button" onClick={() => loadSimulatorPreset('booking')} className="p-1.5 bg-slate-950 hover:bg-slate-800 rounded border border-slate-800 text-[10px] text-slate-200 transition text-left leading-tight">📋 Normal Booking</button><button type="button" onClick={() => loadSimulatorPreset('arabic')} className="p-1.5 bg-slate-950 hover:bg-slate-800 rounded border border-slate-800 text-[10px] text-slate-200 transition text-left leading-tight">🇰🇼 Arabic Inquiry</button><button type="button" onClick={() => loadSimulatorPreset('arabicBooking')} className="p-1.5 bg-slate-950 hover:bg-slate-800 rounded border border-slate-800 text-[10px] text-slate-200 transition text-left leading-tight">👩🏽 Arabic Booking</button><button type="button" onClick={() => loadSimulatorPreset('faq')} className="p-1.5 bg-slate-950 hover:bg-slate-800 rounded border border-slate-800 text-[10px] text-slate-200 transition text-left leading-tight">💬 FAQ Inquiry</button><button type="button" onClick={() => loadSimulatorPreset('offtopic')} className="p-1.5 bg-slate-950 hover:bg-slate-800 rounded border border-slate-800 text-[10px] text-slate-200 transition text-left leading-tight">🚫 Off-Topic</button></div></div>
               <form onSubmit={handleSimulateInbound} className="space-y-3 bg-slate-900 p-3 rounded-lg border border-slate-800">
-                <div className="grid grid-cols-2 gap-2"><div><label className="text-[9px] text-slate-400 font-mono uppercase block mb-1">Patient Name</label><input type="text" value={simName} onChange={(e) => setSimName(e.target.value)} className="w-full text-xs px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded text-white" required /></div><div><label className="text-[9px] text-slate-400 font-mono uppercase block mb-1">Phone No</label><input type="text" value={simPhone} onChange={(e) => setSimPhone(e.target.value)} className="w-full text-xs px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded text-white font-mono" required /></div></div>
+                <div className="grid grid-cols-2 gap-2"><div><label className="text-[9px] text-slate-400 font-mono uppercase block mb-1">Customer Name</label><input type="text" value={simName} onChange={(e) => setSimName(e.target.value)} className="w-full text-xs px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded text-white" required /></div><div><label className="text-[9px] text-slate-400 font-mono uppercase block mb-1">Phone No</label><input type="text" value={simPhone} onChange={(e) => setSimPhone(e.target.value)} className="w-full text-xs px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded text-white font-mono" required /></div></div>
                 <div><label className="text-[9px] text-slate-400 font-mono uppercase block mb-1">Message Text</label><textarea rows={3} value={simMessage} onChange={(e) => setSimMessage(e.target.value)} className="w-full text-xs p-2.5 bg-slate-950 border border-slate-800 rounded text-white placeholder-slate-600 focus:outline-none" required /></div>
                 <button type="submit" disabled={isSimulatingMessage || !simMessage.trim()} className="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs rounded transition flex items-center justify-center gap-1.5 disabled:opacity-50">{isSimulatingMessage ? <><LoaderIcon className="w-3.5 h-3.5 animate-spin" /><span>Sending...</span></> : <><Send className="w-3.5 h-3.5" /><span>Dispatch Incoming WhatsApp</span></>}</button>
               </form>
@@ -370,7 +462,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           )}
           {activeTab === 'faqs' && (
             <div className="space-y-4">
-              <div className="p-3 bg-slate-900 rounded-lg border border-slate-800 space-y-3"><h4 className="text-[11px] font-bold text-white tracking-widest uppercase flex items-center gap-1 border-b border-slate-800 pb-1"><Cpu className="w-3.5 h-3.5" /> System Prompt</h4><div className="space-y-2.5 text-xs text-slate-300"><div><label className="text-[9px] text-slate-400 font-mono block mb-1">Company Name</label><input type="text" value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} className="w-full text-xs px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded text-white" /></div><div className="grid grid-cols-2 gap-2"><div><label className="text-[9px] text-slate-400 font-mono block mb-1">Tone</label><select value={profile.replyTone} onChange={(e) => setProfile({ ...profile, replyTone: e.target.value as any })} className="w-full text-xs px-2 py-1.5 bg-slate-950 border border-slate-800 rounded text-white"><option value="supportive">❤️ Supportive</option><option value="professional">💼 Professional</option><option value="friendly">😊 Friendly</option><option value="casual">🤙 Casual</option></select></div><div><label className="text-[9px] text-slate-400 font-mono block mb-1">Threshold</label><select value={profile.minConfidence} onChange={(e) => setProfile({ ...profile, minConfidence: parseFloat(e.target.value) })} className="w-full text-xs px-2 py-1.5 bg-slate-950 border border-slate-800 rounded text-white"><option value="0.5">50%</option><option value="0.7">70%</option><option value="0.8">80%</option><option value="0.9">90%</option></select></div></div><div><label className="text-[9px] text-slate-400 font-mono block mb-1">Business Description</label><textarea rows={3} value={profile.systemContext} onChange={(e) => setProfile({ ...profile, systemContext: e.target.value })} className="w-full text-xs p-2 bg-slate-950 border border-slate-800 rounded text-white leading-relaxed" /></div><div className="flex items-center gap-2 pt-1 border-t border-slate-800"><input type="checkbox" id="enable_auto_reply_global" checked={profile.autoReplyEnabled} onChange={(e) => setProfile({ ...profile, autoReplyEnabled: e.target.checked })} className="rounded bg-slate-950 border-slate-800 text-cyan-600 focus:ring-0" /><label htmlFor="enable_auto_reply_global" className="text-[10px] text-slate-400 select-none">Enable AI Auto-Replies globally</label></div><button type="button" onClick={saveProfileHandler} disabled={isProfileSaving} className="w-full py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded text-xs transition">{isProfileSaving ? "Saving..." : "Update AI Guidelines"}</button></div></div>
+              <div className="p-3 bg-slate-900 rounded-lg border border-slate-800 space-y-3"><h4 className="text-[11px] font-bold text-white tracking-widest uppercase flex items-center gap-1 border-b border-slate-800 pb-1"><Cpu className="w-3.5 h-3.5" /> System Prompt</h4><div className="space-y-2.5 text-xs text-slate-300"><div><label className="text-[9px] text-slate-400 font-mono block mb-1">Company Name</label><input type="text" value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} className="w-full text-xs px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded text-white" /></div><div className="grid grid-cols-2 gap-2"><div><label className="text-[9px] text-slate-400 font-mono block mb-1">Tone</label><select value={profile.replyTone} onChange={(e) => setProfile({ ...profile, replyTone: e.target.value as any })} className="w-full text-xs px-2 py-1.5 bg-slate-950 border border-slate-800 rounded text-white"><option value="hospitable">🍽️ Hospitable</option><option value="supportive">❤️ Supportive</option><option value="professional">💼 Professional</option><option value="friendly">😊 Friendly</option><option value="casual">🤙 Casual</option></select></div><div><label className="text-[9px] text-slate-400 font-mono block mb-1">Threshold</label><select value={profile.minConfidence} onChange={(e) => setProfile({ ...profile, minConfidence: parseFloat(e.target.value) })} className="w-full text-xs px-2 py-1.5 bg-slate-950 border border-slate-800 rounded text-white"><option value="0.5">50%</option><option value="0.7">70%</option><option value="0.8">80%</option><option value="0.9">90%</option></select></div></div><div><label className="text-[9px] text-slate-400 font-mono block mb-1">Business Description</label><textarea rows={3} value={profile.systemContext} onChange={(e) => setProfile({ ...profile, systemContext: e.target.value })} className="w-full text-xs p-2 bg-slate-950 border border-slate-800 rounded text-white leading-relaxed" /></div><div className="flex items-center gap-2 pt-1 border-t border-slate-800"><input type="checkbox" id="enable_auto_reply_global" checked={profile.autoReplyEnabled} onChange={(e) => setProfile({ ...profile, autoReplyEnabled: e.target.checked })} className="rounded bg-slate-950 border-slate-800 text-cyan-600 focus:ring-0" /><label htmlFor="enable_auto_reply_global" className="text-[10px] text-slate-400 select-none">Enable AI Auto-Replies globally</label></div><button type="button" onClick={saveProfileHandler} disabled={isProfileSaving} className="w-full py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded text-xs transition">{isProfileSaving ? "Saving..." : "Update AI Guidelines"}</button></div></div>
               <div className="space-y-3"><h4 className="text-[11px] font-bold text-white tracking-widest uppercase">FAQ Fact Sheets ({faqs.length})</h4>
                 <form onSubmit={addFAQHandler} className="bg-slate-900 border border-slate-800 p-3 rounded-lg space-y-2 text-xs"><div className="text-[10px] font-semibold text-slate-300 flex items-center gap-1"><Plus className="w-3.5 h-3.5 text-cyan-400" /> New FAQ</div><div><input type="text" placeholder="Question" value={faqQuestion} onChange={(e) => setFaqQuestion(e.target.value)} className="w-full text-xs px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded text-slate-200" required /></div><div><textarea rows={2} placeholder="Answer" value={faqAnswer} onChange={(e) => setFaqAnswer(e.target.value)} className="w-full text-xs p-2 bg-slate-950 border border-slate-800 rounded text-slate-200" required /></div><div><input type="text" placeholder="Keywords (comma separated)" value={faqKeywords} onChange={(e) => setFaqKeywords(e.target.value)} className="w-full text-xs px-2 py-1 bg-slate-950 border border-slate-800 rounded text-slate-400 font-mono" /></div><button type="submit" className="w-full py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold rounded text-xs transition">Add FAQ</button></form>
                 <div className="space-y-2">{faqs.map(f => (<div key={f.id} className="p-2.5 bg-slate-900 rounded-lg border border-slate-800 text-xs flex flex-col gap-1 relative group"><button onClick={() => deleteFAQHandler(f.id)} className="absolute right-2 top-2 p-1 bg-slate-950 md:opacity-0 group-hover:opacity-100 text-slate-500 hover:text-rose-400 rounded transition"><Trash className="w-3 h-3" /></button><div className="font-bold text-slate-200 text-xs pr-6">❓ {f.question}</div><div className="text-slate-400 leading-relaxed text-[11px]">{f.answer}</div>{f.keywords && f.keywords.length > 0 && (<div className="flex flex-wrap gap-1 mt-1">{f.keywords.map((kw, i) => (<span key={i} className="text-[9px] bg-slate-950 text-slate-500 rounded font-mono px-1 py-0.5 border border-slate-800">#{kw}</span>))}</div>)}</div>))}</div>
@@ -378,7 +470,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
               <div className="space-y-3"><h4 className="text-[11px] font-bold text-white tracking-widest uppercase">Canned Shortcuts (⚡)</h4><form onSubmit={addCannedHandler} className="bg-slate-900 border border-slate-800 p-3 rounded-lg space-y-2 text-xs"><div className="grid grid-cols-2 gap-2"><input type="text" placeholder="Shortcut (/welcome)" value={cannedShortcut} onChange={(e) => setCannedShortcut(e.target.value)} className="w-full text-xs px-2 py-1.5 bg-slate-950 border border-slate-800 rounded font-mono text-cyan-400" required /><button type="submit" className="py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded text-xs font-semibold">Save</button></div><div><input type="text" placeholder="Full response text..." value={cannedText} onChange={(e) => setCannedText(e.target.value)} className="w-full text-xs px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded text-slate-300" required /></div></form><div className="divide-y divide-slate-800 bg-slate-900 rounded-lg border border-slate-800">{cannedResponses.map(c => (<div key={c.id} className="p-2 flex items-center justify-between text-xs hover:bg-slate-800/40"><div><span className="font-mono text-cyan-400 font-bold">{c.shortcut}: </span><span className="text-[10px] text-slate-400 break-all">{c.text}</span></div><button onClick={() => deleteCannedHandler(c.id)} className="text-slate-500 hover:text-slate-300 p-1"><X className="w-3 h-3" /></button></div>))}</div></div>
             </div>
           )}
-          {activeTab === 'settings' && (<div className="space-y-4"><div><h3 className="text-xs font-bold text-white tracking-wider uppercase mb-1">WhatsApp Cloud API</h3><p className="text-[11px] text-slate-400 leading-relaxed">Connect live Meta WhatsApp credentials.</p></div><div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2 text-xs"><span className="text-[10px] font-bold text-emerald-400 font-mono block">WEBHOOK URL:</span><div className="p-2 bg-slate-900 text-[10px] font-mono break-all select-all rounded border border-slate-800 text-slate-300">{(baseUrl || window.location.origin) + "/api/whatsapp/webhook"}</div></div><form onSubmit={(e) => { e.preventDefault(); saveWhatsAppConfigHandler(); }} className="p-3 bg-slate-900 rounded-lg border border-slate-800 space-y-3"><h4 className="text-[11px] font-bold text-white tracking-wider uppercase border-b border-slate-800 pb-1">API CREDENTIALS</h4><div className="space-y-3 text-xs text-slate-300"><div><label className="text-[9px] text-slate-400 font-mono block mb-1">Phone Number ID</label><input type="password" disabled value={waConfig.phoneNumberId} onChange={(e) => setWaConfig({ ...waConfig, phoneNumberId: e.target.value })} className="w-full text-xs px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded text-white" /></div><div><label className="text-[9px] text-slate-400 font-mono block mb-1">Business Account ID</label><input type="password" disabled value={waConfig.businessAccountId} onChange={(e) => setWaConfig({ ...waConfig, businessAccountId: e.target.value })} className="w-full text-xs px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded text-white" /></div><div><label className="text-[9px] text-slate-400 font-mono block mb-1">Verify Token</label><input type="password" disabled value={waConfig.verifyToken} onChange={(e) => setWaConfig({ ...waConfig, verifyToken: e.target.value })} className="w-full text-xs px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded text-orange-300 font-mono" /></div><div><label className="text-[9px] text-slate-400 font-mono block mb-1">Access Token</label><input type="password" disabled value={waConfig.accessToken} onChange={(e) => setWaConfig({ ...waConfig, accessToken: e.target.value })} className="w-full text-xs px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded text-slate-400 font-mono" /></div><button type="submit" disabled className="w-full py-2 bg-cyan-600 text-white font-semibold rounded text-xs transition opacity-50 cursor-not-allowed">Link Meta Cloud</button></div></form>
+          {activeTab === 'settings' && (<div className="space-y-4"><div><h3 className="text-xs font-bold text-white tracking-wider uppercase mb-1">WhatsApp Cloud API</h3><p className="text-[11px] text-slate-400 leading-relaxed">Connect live Meta WhatsApp credentials.</p></div><div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2 text-xs"><span className="text-[10px] font-bold text-emerald-400 font-mono block">WEBHOOK URL:</span><div className="p-2 bg-slate-900 text-[10px] font-mono break-all select-all rounded border border-slate-800 text-slate-300">{(baseUrl || window.location.origin) + "/api/whatsapp/webhook"}</div></div><form onSubmit={(e) => { e.preventDefault(); saveWhatsAppConfigHandler(); }} className="p-3 bg-slate-900 rounded-lg border border-slate-800 space-y-3"><h4 className="text-[11px] font-bold text-white tracking-wider uppercase border-b border-slate-800 pb-1">API CREDENTIALS</h4><div className="space-y-3 text-xs text-slate-300"><div><label className="text-[9px] text-slate-400 font-mono block mb-1">Phone Number ID</label><input type="text" value={waConfig.phoneNumberId} onChange={(e) => setWaConfig({ ...waConfig, phoneNumberId: e.target.value })} className="w-full text-xs px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded text-white" /></div><div><label className="text-[9px] text-slate-400 font-mono block mb-1">Business Account ID</label><input type="text" value={waConfig.businessAccountId} onChange={(e) => setWaConfig({ ...waConfig, businessAccountId: e.target.value })} className="w-full text-xs px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded text-white" /></div><div><label className="text-[9px] text-slate-400 font-mono block mb-1">Verify Token</label><input type="text" value={waConfig.verifyToken} onChange={(e) => setWaConfig({ ...waConfig, verifyToken: e.target.value })} className="w-full text-xs px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded text-orange-300 font-mono" /></div><div><label className="text-[9px] text-slate-400 font-mono block mb-1">Access Token</label><input type="password" value={waConfig.accessToken} onChange={(e) => setWaConfig({ ...waConfig, accessToken: e.target.value })} className="w-full text-xs px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded text-slate-400 font-mono" /></div><button type="submit" className="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded text-xs transition">Link Meta Cloud</button></div></form>
             <div className="p-3 bg-slate-900 rounded-lg border border-slate-800 space-y-3">
               <h4 className="text-[11px] font-bold text-white tracking-wider uppercase border-b border-slate-800 pb-1 flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" /> Test Sheet (test-sheet.md)</h4>
               <p className="text-[10px] text-slate-400">Test scenarios for the AI agent. Saved to <span className="text-cyan-400 font-mono">docs/test-sheet.md</span> on disk.</p>
@@ -554,7 +646,7 @@ function DashboardView({ threads, appointments, contacts, onRefresh, onClose }: 
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  return isLoggedIn ? <Dashboard onLogout={() => setIsLoggedIn(false)} /> : <LoginPage onLogin={() => setIsLoggedIn(true)} />;
+  return isLoggedIn ? <Dashboard onLogout={() => setIsLoggedIn(false)} /> : <AuthPage onLogin={() => setIsLoggedIn(true)} />;
 }
 
 function LoaderIcon({ className }: { className?: string }) {

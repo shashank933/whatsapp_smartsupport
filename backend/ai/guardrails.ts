@@ -79,42 +79,15 @@ export function detectAbuse(text: string): GuardrailResult {
 
 // ---------------------------------------------------------------------------
 // 3. Off-Topic Detection
-//     Blocks messages completely unrelated to dental care
+//     Blocks messages completely unrelated to business scope
+//     Uses generic business patterns instead of domain-specific ones
 // ---------------------------------------------------------------------------
-const ON_TOPIC_PATTERNS = [
-  /tooth|teeth|dental|dentist|gum|oral|mouth|cavity/i,
-
-  /تبييض|تنظيف|حشو|خلع|تقويم|لثة|فم|مينا|جسر|طقم/i,
-
-  /appointment|book|schedule|reserve|visit|check.?up/i,
-  /موعد|حجز|زيارة|كشف|فحص|احجز|حاجز/i,
-
-  /price|cost|fee|how much|expensive|cheap|ريال|دينار|كم سعر|كم تكلف/i,
-
-  /hour|open|close|location|address|where|time|day/i,
-  /ساعة|مفتوح|مغلق|عنوان|موقع|وين|متى|ايام|يوم/i,
-
-  /pain|hurt|bleeding|swollen|ache|sore/i,
-  /ألم|وجع|نزيف|ورم|منتفخ|يكسر/i,
-
-  /hi|hello|hey|good morning|good evening|greetings/i,
-  /مرحبا|السلام|اهلا|هلا|صباح الخير|مساء الخير/i,
-
-  /cancel|reschedule|change|confirm/i,
-  /الغي|إلغاء|تغيير|تأكيد|تاكيد/i,
-];
+const ON_TOPIC_PATTERNS: RegExp[] = [];
 
 export function detectOffTopic(text: string): GuardrailResult {
-  for (const pattern of ON_TOPIC_PATTERNS) {
-    if (pattern.test(text)) {
-      return { blocked: false };
-    }
-  }
-  const trimmed = text.trim().replace(/\s+/g, " ");
-  if (trimmed.length < 5) {
-    return { blocked: false };
-  }
-  return { blocked: true, reason: "Message appears unrelated to dental care." };
+  // No on-topic patterns defined — pass all messages through.
+  // Business scope is enforced by the LLM prompt and FAQ matching.
+  return { blocked: false };
 }
 
 // ---------------------------------------------------------------------------
@@ -136,35 +109,23 @@ export function detectPII(text: string): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// 5. Medical Advice Re-Check (output guard)
-//     Re-verifies the LLM response for leaked medical advice
+// 5. Unsafe Advice Re-Check (output guard)
+//     Re-verifies the LLM response for leaked professional advice
+//     Configure these patterns based on your industry requirements
 // ---------------------------------------------------------------------------
-const MEDICAL_ADVICE_PATTERNS = [
-  /you\s+(should|must|need to|have to)\s+(take|apply|use|try|eat|drink)/i,
-  /(take|apply|use|try)\s+(this|the|a|an|some)\s+(medicine|medication|pill|tablet|antibiotic|cream|gel|drops|oil)/i,
-  /(this|that|it)\s+(is|could be|might be|sounds like)\s+(a|an)?\s*(infection|cavity|abscess|disease|condition|syndrome|injury|fracture|tumor|cancer)/i,
-  /you\s+(likely|probably|definitely|most likely)\s+(have|are suffering from|are experiencing)/i,
-  /I\s+(recommend|prescribe|suggest)\s+(you\s+)?(take|get|buy|use|try|apply)/i,
-  /that\s+(needs|requires|demands)\s+(surgery|operation|extraction|treatment|medication|antibiotics|a root canal)/i,
-];
+const UNSAFE_ADVICE_PATTERNS: RegExp[] = [];
 
-const MEDICAL_ADVICE_PATTERNS_AR = [
-  /أنت\s+(تحتاج|يجب|لازم|محتاج|بحاجة)\s+(إلى|ل|ان|أن)\s+(تأخذ|تستخدم|تشتري|تجرب|تطبق|تدهن)/i,
-  /(خذ|استخدم|جرب|اشتري|ادهن)\s+(هذا|هذه|الدواء|العلاج|المضاد|الكريم|الجل|القطرة|الحبة|الحبوب)/i,
-  /هذا\s+(التهاب|تسوس|خراج|مرض|ورم|كسر|عدوى|إصابة|سرطان)/i,
-  /أنصحك\s+(ب|أن|بأن)/i,
-  /تحتاج\s+(عملية|جراحة|خلع|علاج|مضاد|مضادات)/i,
-];
+const UNSAFE_ADVICE_PATTERNS_AR: RegExp[] = [];
 
-export function detectMedicalAdviceInOutput(text: string): GuardrailResult {
-  for (const pattern of MEDICAL_ADVICE_PATTERNS) {
+export function detectUnsafeAdviceInOutput(text: string): GuardrailResult {
+  for (const pattern of UNSAFE_ADVICE_PATTERNS) {
     if (pattern.test(text)) {
-      return { blocked: true, reason: "LLM generated potential medical advice; output blocked." };
+      return { blocked: true, reason: "LLM generated potentially unsafe advice; output blocked." };
     }
   }
-  for (const pattern of MEDICAL_ADVICE_PATTERNS_AR) {
+  for (const pattern of UNSAFE_ADVICE_PATTERNS_AR) {
     if (pattern.test(text)) {
-      return { blocked: true, reason: "LLM generated potential medical advice; output blocked." };
+      return { blocked: true, reason: "LLM generated potentially unsafe advice; output blocked." };
     }
   }
   return { blocked: false };
@@ -239,10 +200,10 @@ export function applyOutputGuardrails(result: AIDraftOutput): {
   reason?: string;
   correctedText?: string;
 } {
-  const medicalAdvice = detectMedicalAdviceInOutput(result.replyText);
-  if (medicalAdvice.blocked) {
-    console.warn(`[Guardrail] Output blocked: ${medicalAdvice.reason}`);
-    return { blocked: true, reason: medicalAdvice.reason };
+  const unsafeAdvice = detectUnsafeAdviceInOutput(result.replyText);
+  if (unsafeAdvice.blocked) {
+    console.warn(`[Guardrail] Output blocked: ${unsafeAdvice.reason}`);
+    return { blocked: true, reason: unsafeAdvice.reason };
   }
 
   const confidence = checkConfidence(result.confidence);

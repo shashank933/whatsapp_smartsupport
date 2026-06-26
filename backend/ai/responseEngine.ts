@@ -110,33 +110,11 @@ export interface AIDraftOutput {
 // -------------------------------------------------------------
 // Keyword Arrays (Arabic keywords kept for detection, not user-visible)
 // -------------------------------------------------------------
-const EMERGENCY_KEYWORDS_AR = [
-  "نزيف", "دم", "ينزف", "ورم", "متورم", "منتفخ", "وجع شديد", "ألم شديد",
-  "الم شديد", "وجع قوي", "الم قوي", "طوارئ", "طارئ", "حادث", "كسر",
-  "خدر", "تنميل", "ما بقدر أتحمل", "ما بقدر اتحمل", "فقدان وعي", "إغماء",
-];
-const EMERGENCY_KEYWORDS_EN = [
-  "bleeding", "blood", "swollen", "swelling", "severe pain", "extreme pain",
-  "unbearable pain", "emergency", "accident", "broke my tooth", "knocked out",
-  "numb", "numbness", "can't take", "cant take", "worst pain", "trauma",
-  "urgent", "immediately", "right now", "hospital", "fainted", "passed out",
-  "abscess", "infection", "puss", "pus",
-];
+const EMERGENCY_KEYWORDS_AR: string[] = [];
+const EMERGENCY_KEYWORDS_EN: string[] = [];
 
-const MEDICAL_KEYWORDS_AR = [
-  "نصيحة طبية", "تشخيص", "شخص", "مرض", "عندي", "يصير", "أعاني",
-  "ألم في", "وجع في", "تسوس", "خراج", "لثتي", "لثة", "عصب", "حساسية",
-  "دوخة", "صداع", "هل لازم", "تحتاج", "أحتاج", "متى", "ليش", "اسباب",
-  "أسباب", "هل", "طبيعي", "عدوى",
-];
-const MEDICAL_KEYWORDS_EN = [
-  "diagnose", "diagnosis", "sick", "disease", "i have a tooth", "i have pain",
-  "suffering", "pain in my", "hurt", "hurts", "cavity", "decay", "gum", "nerve",
-  "sensitivity", "sensitive", "should I", "do I need", "what is wrong",
-  "why does", "cause", "causes", "normal", "infection", "infected",
-  "prescribe", "prescription", "medicine", "medication", "antibiotic",
-  "medical advice", "clinical advice", "tell me what to do",
-];
+const MEDICAL_KEYWORDS_AR: string[] = [];
+const MEDICAL_KEYWORDS_EN: string[] = [];
 
 const BOOKING_KEYWORDS_AR = [
   "حجز", "احجز", "موعد", "أريد", "ابي", "ابغى", "بغيت", "اريد",
@@ -147,7 +125,7 @@ const BOOKING_KEYWORDS_AR = [
 const BOOKING_KEYWORDS_EN = [
   "book", "appointment", "schedule", "reserve", "I want", "I'd like",
   "I would like", "can I come", "make an appointment", "set up", "need to see",
-  "see the dentist", "see a dentist", "visit",
+  "visit",
 ];
 
 const DAYS_MAP: Record<string, string> = {
@@ -448,8 +426,8 @@ export async function generateAIResponseForMessage(
   const inputGuard = applyInputGuardrails(englishText, customerMessage);
   if (inputGuard.blocked) {
     const replyText = isNonEnglish
-      ? await translateToLanguage("I'm sorry, I can't process that request. How can I help you with dental care?", originalLanguage)
-      : "I'm sorry, I can't process that request. How can I help you with dental care?";
+      ? await translateToLanguage("I'm sorry, I can't process that request. How can I help you today?", originalLanguage)
+      : "I'm sorry, I can't process that request. How can I help you today?";
     return {
       replyText,
       confidence: 1.0,
@@ -482,14 +460,13 @@ export async function generateAIResponseForMessage(
     || containsAny(customerMessage, EMERGENCY_KEYWORDS_AR);
 
   if (emergencyHit) {
-    const englishReply = "This sounds like a dental emergency requiring immediate care. Please go to the nearest hospital emergency room right now. We have flagged your case for the dentist to follow up with you. Your safety matters.";
     const replyText = isNonEnglish
-      ? await translateToLanguage(englishReply, originalLanguage)
-      : englishReply;
+      ? await translateToLanguage("This requires immediate attention. Please contact our support team directly or call emergency services if needed. We have flagged your case for priority follow-up.", originalLanguage)
+      : "This requires immediate attention. Please contact our support team directly or call emergency services if needed. We have flagged your case for priority follow-up.";
     return {
       replyText,
       confidence: 1.0,
-      explanation: "Dental emergency keywords detected. Escalating to human and directing to emergency care.",
+      explanation: "Emergency keywords detected. Escalating to human and directing to appropriate support.",
       isAutoRepliable: true,
       isEmergency: true,
     };
@@ -505,32 +482,26 @@ export async function generateAIResponseForMessage(
     .map((f, i) => `${i + 1}. [FAQ ID: ${f.id}] Query: "${f.question}" -> Answer: "${f.answer}"`)
     .join("\n");
 
-  let prompt = `You are a warm, professional AI customer support agent for "${profile.name}", a dental clinic in Salmiya, Kuwait.
+  let prompt = `You are a warm, professional AI customer support agent for "${profile.name}".
 Tone: ${profile.replyTone}.
 Context: "${profile.systemContext}"
 
 CRITICAL RULES:
-1. NEVER give medical or clinical advice, diagnoses, or treatment recommendations. If a patient asks about symptoms, pain, medicine, or conditions, politely refuse and suggest they see the dentist in person.
-2. If a patient confirms a booking with name, day, and time, respond with isBooking: true and include the bookingName, bookingDay, bookingTime.
-3. If a patient asks to CANCEL an appointment, identify which one by index (the [N] numbers above) and set isCancel: true with cancelAppointmentIndex set to that number.
-4. If a patient asks to RESCHEDULE, first cancel the old one (isCancel: true) and then create a new one (isBooking: true) — explain both steps in replyText.
-5. If a patient asks about their appointments, list them from the "PATIENT APPOINTMENTS" section.
-6. Before confirming a booking, check the PATIENT APPOINTMENTS list for duplicates on the same day that are still "confirmed". Ignore "cancelled" ones — they are no longer active. Warn only if a confirmed one exists.
-7. Reject bookings for Friday (clinic closed).
-8. If the message is unrelated to dental care, politely explain your scope.
-9. Reply in the same language the patient used. Be warm, professional, and concise.
-10. If you need more information to help, ask a clarifying question.
-11. For bookings, infer the serviceType from the conversation (e.g., "Check-up", "Cleaning", "Whitening", "Filling"). Default to "Check-up".
-
-CLINIC INFO:
-- Location: Salem Al-Mubarak Street, Block 5, Salmiya, Kuwait (near Al-Fanar Mall)
-- Hours: Saturday to Thursday, 9:00 AM to 9:00 PM. Closed Fridays.
-- Services: Check-up 15 KWD, Cleaning 25 KWD, Whitening 80 KWD, Filling from 30 KWD
+1. If a customer confirms a booking with name, day, and time, respond with isBooking: true and include the bookingName, bookingDay, bookingTime.
+2. If a customer asks to CANCEL an appointment, identify which one by index (the [N] numbers above) and set isCancel: true with cancelAppointmentIndex set to that number.
+3. If a customer asks to RESCHEDULE, first cancel the old one (isCancel: true) and then create a new one (isBooking: true) — explain both steps in replyText.
+4. If a customer asks about their appointments, list them from the "CUSTOMER APPOINTMENTS" section.
+5. Before confirming a booking, check the CUSTOMER APPOINTMENTS list for duplicates on the same day that are still "confirmed". Ignore "cancelled" ones — they are no longer active. Warn only if a confirmed one exists.
+6. Do not accept bookings on days the business is closed (check the business context above).
+7. If the message is unrelated to your business scope, politely explain your scope and offer to help with relevant matters.
+8. Reply in the same language the customer used. Be warm, professional, and concise.
+9. If you need more information to help, ask a clarifying question.
+10. For bookings, infer the serviceType from the conversation context. Default to "General".
 
 `;
 
   if (appointmentsStr) {
-    prompt += `PATIENT APPOINTMENTS (already booked):\n${appointmentsStr}\n\n`;
+    prompt += `CUSTOMER APPOINTMENTS (already booked):\n${appointmentsStr}\n\n`;
   }
 
   if (customerContextStr) {

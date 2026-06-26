@@ -1,6 +1,6 @@
 {
-  "name": "WhatsApp Support Agent Hub",
-  "description": "An automated AI assistant dashboard for operating a WhatsApp Business account. Features automatic FAQ replies, simulated sandbox testing, tone tailoring, webhook logging, and a live WhatsApp Cloud API integration gateway.",
+  "name": "WhatsApp SmartSupport",
+  "description": "A general-purpose AI-powered WhatsApp Business support platform. Features automatic AI replies, multi-language support, appointment/bookings management, CRM sync, admin dashboard with live chat, simulator testing, and WhatsApp Cloud API integration.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

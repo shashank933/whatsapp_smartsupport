@@ -109,7 +109,7 @@ async function testWebhookPost() {
                   id: "wamid.emergency",
                   timestamp: String(Math.floor(Date.now() / 1000)),
                   type: "text",
-                  text: { body: "I have severe pain and bleeding, please help!" },
+                  text: { body: "I need urgent support, please help!" },
                 },
               ],
             },
@@ -187,7 +187,7 @@ async function testWebhookPost() {
                   id: "wamid.pricing",
                   timestamp: String(Math.floor(Date.now() / 1000)),
                   type: "text",
-                  text: { body: "How much does teeth whitening cost?" },
+                  text: { body: "How much does Educational Support Hub cost?" },
                 },
               ],
             },
@@ -253,7 +253,7 @@ async function testSimulateIncoming() {
   const res = await post("/api/simulate-incoming", {
     customerPhone: "+96566612345",
     customerName: "Test User Sim",
-    messageText: "Hi, I need a check-up appointment for Thursday at 2 PM",
+    messageText: "Hi, I need an appointment for Thursday at 2 PM",
   });
 
   logTest(

@@ -31,41 +31,69 @@ function loadPromptRules(): string {
 }
 
 // -------------------------------------------------------------
-// In-Memory Database — Bright Smile Dental Clinic
+// In-Memory Database — WhatsApp SmartSupport
 // -------------------------------------------------------------
 export let memoryFaqs: FAQItem[] = [
   {
     id: "faq_hours",
-    question: "What are your working hours?",
+    question: "What are your opening hours?",
     answer:
-      "Bright Smile Dental Clinic is open Saturday to Thursday, 9:00 AM to 9:00 PM. We are closed on Fridays.",
-    keywords: ["hours", "open", "time", "working", "ساعات", "مفتوح", "وقت", "مواعيد", "friday", "الجمعة", "saturday", "السبت", "schedule", "جدول"],
+      "We are open Sunday to Thursday from 12:00 PM to 11:00 PM, and Friday to Saturday from 1:00 PM to 11:30 PM.",
+    keywords: ["hours", "open", "time", "working", "ساعات", "مفتوح", "وقت", "مواعيد", "weekend", "عطلة", "sunday", "monday", "الاثنين", "schedule", "جدول", "close", "متى", "تسكرون", "تفتحون", "closing", "opening"],
   },
   {
     id: "faq_location",
-    question: "Where is the clinic located?",
+    question: "Where are you located?",
     answer:
-      "We are located in Salmiya, Kuwait — Salem Al-Mubarak Street, Block 5, near the Al-Fanar Mall.",
-    keywords: ["location", "address", "where", "salmiya", "الكويت", "موقع", "عنوان", "أين", "السالمية", "salem", "سالم", "المبارك", "fanar", "الفنار"],
+      "We are located at [Restaurant Address]. You can find us on Google Maps. Parking is available on-site for our dine-in guests.",
+    keywords: ["location", "address", "where", "located", "directions", "map", "parking", "موقع", "عنوان", "وين", "فين", "موقعكم", "خرائط", "مواقف", "park"],
   },
   {
-    id: "faq_services",
-    question: "What services do you offer and what are the prices?",
+    id: "faq_menu",
+    question: "What is on your menu? / What food do you serve?",
     answer:
-      "Our services and prices:\n• Check-up: 15 KWD\n• Cleaning (Scaling & Polishing): 25 KWD\n• Teeth Whitening: 80 KWD\n• Filling: starting from 30 KWD",
-    keywords: ["services", "prices", "cost", "price", "خدمات", "أسعار", "سعر", "تكلفة", "check-up", "كشف", "cleaning", "تنظيف", "whitening", "تبييض", "filling", "حشوة", "kwd", "دينار"],
+      "We serve a variety of dishes including appetizers, main courses, and desserts. Please let us know what you're looking for (e.g., vegetarian options, grilled dishes, seafood) and we'll be happy to help!",
+    keywords: ["menu", "food", "dishes", "eat", "serve", "cuisine", "منيو", "قائمة", "طعام", "أكل", "أطباق", "عندكم", "ماذا", "اطباق", "وجبات", "مأكولات", "cooking", "kitchen", "مطبخ"],
   },
   {
-    id: "faq_booking",
-    question: "How can I book an appointment?",
+    id: "faq_dietary",
+    question: "Do you have vegetarian / vegan / gluten-free options?",
     answer:
-      "To book an appointment, just tell me your full name and your preferred day and time (e.g., 'Ahmed, Sunday at 3 PM'). I'll confirm it for you!",
-    keywords: ["book", "appointment", "booking", "reserve", "حجز", "موعد", "احجز", "schedule", "جدولة", "name", "اسم", "day", "يوم", "time", "وقت"],
+      "Yes, we offer vegetarian and vegan options on our menu. For gluten-free and other dietary requirements, please let us know your specific needs and we'll confirm what's available. If you have severe allergies, please inform our staff when you arrive.",
+    keywords: ["vegetarian", "vegan", "gluten", "dietary", "halal", "dairy", "allergy", "allergen", "nuts", "نباتي", "حلال", "خالي", "جلوتين", "حساسية", "تحسس", "diet", "حليب", "lactose", "مكسرات", "فول"],
+  },
+  {
+    id: "faq_reservation",
+    question: "How can I make a reservation / book a table?",
+    answer:
+      "To book a table, just tell me your full name, preferred day and time, and how many guests. For example: 'Ahmed, Sunday at 7 PM for 4 people'. I'll confirm your reservation right away!",
+    keywords: ["book", "booking", "reserve", "reservation", "table", "حجز", "موعد", "احجز", "schedule", "جدولة", "name", "اسم", "day", "يوم", "time", "وقت", "guests", "people", "persons", "ضيوف", "أشخاص", "طاولة"],
+  },
+  {
+    id: "faq_delivery",
+    question: "Do you deliver? What are your delivery areas?",
+    answer:
+      "Yes, we offer delivery through our own service and partner apps. Please share your area or neighborhood and we'll confirm if we deliver to your location. Delivery hours are the same as our operating hours.",
+    keywords: ["delivery", "deliver", "takeaway", "take out", "home", "توصيل", "ديليفري", "توصيل", "طلبات", "بيت", "منزل", "pickup", "استلام", "area", "منطقة"],
+  },
+  {
+    id: "faq_catering",
+    question: "Do you offer catering or private events?",
+    answer:
+      "Yes, we offer catering services and can host private events! Please tell us the type of event, number of guests, and preferred date, and we'll have our events team reach out with a custom proposal.",
+    keywords: ["catering", "event", "party", "private", "large group", "celebration", "birthday", "حفلة", "مناسبة", "عيد ميلاد", "تجهيز", "حفلات", "مجموعة", "كبير", "corporate", "شركات"],
+  },
+  {
+    id: "faq_contact",
+    question: "How can I contact you?",
+    answer:
+      "You can reach us via WhatsApp here, call us at [Phone Number], or email us at [Email]. You can also find us on Instagram @[handle]. We respond within a few hours during business hours.",
+    keywords: ["contact", "phone", "email", "reach", "help", "call", "اتصال", "دعم", "مساعدة", "بريد", "تواصل", "رقم", "هاتف", "جوال", "instagram", "انستقرام"],
   },
 ];
 
 const baseSystemContext =
-  "Bright Smile Dental Clinic is a trusted dental practice in Salmiya, Kuwait. We are open Saturday to Thursday, 9 AM to 9 PM. Closed Friday. Services: Check-up 15 KWD, Cleaning 25 KWD, Whitening 80 KWD, Filling from 30 KWD. We NEVER give medical or clinical advice — patients must see a dentist in person for any diagnosis or treatment recommendations. For emergencies (severe pain, bleeding, swelling, trauma), we direct patients to seek immediate emergency care and flag the case for a human dentist to follow up. We reply in the same language the patient uses. Our tone is warm, professional, and caring.";
+  "We are a restaurant serving delicious meals to our guests. We operate Sunday to Thursday, 12:00 PM to 11:00 PM, and Friday to Saturday, 1:00 PM to 11:30 PM. We offer dine-in, takeaway, and delivery services. We reply in the same language the customer uses. Our tone is warm, hospitable, and inviting. For allergen and dietary questions, we provide information but always remind guests to inform staff of severe allergies as cross-contamination is possible.";
 
 function buildSystemContext(): string {
   const rules = loadPromptRules();
@@ -76,9 +104,9 @@ function buildSystemContext(): string {
 }
 
 export let memoryProfile: BusinessProfile = {
-  name: "Bright Smile Dental Clinic",
-  industry: "Dental Care",
-  replyTone: "supportive",
+  name: "WhatsApp SmartSupport",
+  industry: "Restaurant",
+  replyTone: "hospitable",
   systemContext: buildSystemContext(),
   autoReplyEnabled: true,
   minConfidence: 0.7,
@@ -88,24 +116,24 @@ export let memoryWhatsAppConfig: WhatsAppConfig = {
   phoneNumberId: "1234567890123",
   businessAccountId: "9876543210987",
   accessToken: "EAAWf...",
-  verifyToken: process.env.WEBHOOK_VERIFY_TOKEN || "bright_smile_verify_secure_token",
+  verifyToken: process.env.WEBHOOK_VERIFY_TOKEN || "smartsupport_verify_secure_token",
 };
 
 export let memoryCannedResponses: CannedResponse[] = [
   {
     id: "canned_1",
     shortcut: "/welcome",
-    text: "Welcome to Bright Smile Dental Clinic! How can we help you today?",
+    text: "Welcome to [Restaurant Name]! How can we help you today? We'd love to take your reservation or answer any questions about our menu. 🍽️",
   },
   {
     id: "canned_2",
     shortcut: "/hours",
-    text: "We are open Saturday to Thursday, 9 AM to 9 PM. Closed Friday.",
+    text: "We are open Sunday to Thursday 12:00 PM to 11:00 PM, and Friday to Saturday 1:00 PM to 11:30 PM.",
   },
   {
     id: "canned_3",
-    shortcut: "/emergency",
-    text: "This sounds like a dental emergency. Please go to the nearest hospital emergency room immediately. We have flagged your case for the dentist to follow up with you.",
+    shortcut: "/followup",
+    text: "A member of our team will follow up with you shortly. Thank you for reaching out — we look forward to serving you! 😊",
   },
 ];
 
@@ -131,7 +159,7 @@ export let memoryThreads: ChatThread[] = [
     customerPhone: "+965 5551-2345",
     customerName: "Fatima Al-Ali",
     status: "open",
-    lastMessageText: "Hi, I need to book a check-up for Thursday morning please.",
+    lastMessageText: "Hi, I need to book an appointment for Thursday morning please.",
     lastMessageTime: Date.now() - 3600000 * 2,
     unreadCount: 1,
     autoReplyActive: true,
@@ -141,7 +169,7 @@ export let memoryThreads: ChatThread[] = [
     customerPhone: "+965 9988-7766",
     customerName: "Mohammed Al-Rashed",
     status: "open",
-    lastMessageText: "How much is teeth whitening?",
+    lastMessageText: "What are your business hours?",
     lastMessageTime: Date.now() - 1800000 * 4,
     unreadCount: 0,
     autoReplyActive: true,
@@ -151,7 +179,7 @@ export let memoryThreads: ChatThread[] = [
     customerPhone: "+965 6677-8899",
     customerName: "Noor Al-Sabah",
     status: "resolved",
-    lastMessageText: "Thank you! I'll come on Sunday at 10 AM.",
+    lastMessageText: "Thank you! I'll come on Monday at 10 AM.",
     lastMessageTime: Date.now() - 3600000 * 24,
     unreadCount: 0,
     autoReplyActive: false,
@@ -163,31 +191,31 @@ export let memoryMessages: ChatMessage[] = [
     id: "msg_1",
     threadId: "thread_customer_1",
     sender: "customer",
-    content: "Hi, I need to book a check-up for Thursday morning please.",
+    content: "Hi, I need to book an appointment for Thursday morning please.",
     timestamp: Date.now() - 3600000 * 2,
   },
   {
     id: "msg_2",
     threadId: "thread_customer_2",
     sender: "customer",
-    content: "How much is teeth whitening?",
+    content: "What are your business hours?",
     timestamp: Date.now() - 1800000 * 4 - 300000,
   },
   {
     id: "msg_3",
     threadId: "thread_customer_2",
     sender: "agent",
-    content: "Teeth whitening is 80 KWD. Would you like to book an appointment?",
+    content: "We are open Sunday to Thursday 12:00 PM to 11:00 PM, and Friday to Saturday 1:00 PM to 11:30 PM.",
     timestamp: Date.now() - 1800000 * 4,
     isAutoReplied: true,
     aiConfidence: 0.98,
-    aiExplanation: "Matched FAQ for services/pricing.",
+    aiExplanation: "Matched FAQ for business hours.",
   },
   {
     id: "msg_4",
     threadId: "thread_customer_3",
     sender: "customer",
-    content: "Are you open on Fridays?",
+    content: "Are you open on weekends?",
     timestamp: Date.now() - 3600000 * 24 - 120000,
   },
   {
@@ -195,7 +223,7 @@ export let memoryMessages: ChatMessage[] = [
     threadId: "thread_customer_3",
     sender: "agent",
     content:
-      "Bright Smile Dental Clinic is open Saturday to Thursday, 9:00 AM to 9:00 PM. We are closed on Fridays.",
+      "We are open Sunday to Thursday 12:00 PM to 11:00 PM, and Friday to Saturday 1:00 PM to 11:30 PM.",
     timestamp: Date.now() - 3600000 * 24 - 60000,
     isAutoReplied: true,
     aiConfidence: 0.99,
@@ -205,7 +233,7 @@ export let memoryMessages: ChatMessage[] = [
     id: "msg_6",
     threadId: "thread_customer_3",
     sender: "customer",
-    content: "Thank you! I'll come on Sunday at 10 AM.",
+    content: "Thank you! I'll come on Sunday at 7 PM for dinner.",
     timestamp: Date.now() - 3600000 * 24,
   },
 ];

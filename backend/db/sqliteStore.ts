@@ -9,6 +9,7 @@ import {
   BusinessProfile,
   FAQItem,
   WhatsAppConfig,
+  User,
 } from "../../src/types";
 import {
   memoryThreads,
@@ -114,6 +115,69 @@ db.exec(`
 db.exec(`
   CREATE INDEX IF NOT EXISTS idx_appointments_phone ON appointments(customerPhone)
 `);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    createdAt INTEGER NOT NULL
+  )
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)
+`);
+
+// -------------------------------------------------------------
+// Users CRUD
+// -------------------------------------------------------------
+export function sqliteCreateUser(user: User): User {
+  db.prepare(
+    `INSERT INTO users (id, name, email, username, password, createdAt)
+     VALUES (@id, @name, @email, @username, @password, @createdAt)`
+  ).run({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    username: user.username,
+    password: user.password,
+    createdAt: user.createdAt,
+  });
+  return user;
+}
+
+export function sqliteGetUserByUsername(username: string): User | undefined {
+  const row = db.prepare(`SELECT * FROM users WHERE username = ?`).get(username) as any;
+  if (!row) return undefined;
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    username: row.username,
+    password: row.password,
+    createdAt: row.createdAt,
+  };
+}
+
+export function sqliteGetUserByEmail(email: string): User | undefined {
+  const row = db.prepare(`SELECT * FROM users WHERE email = ?`).get(email) as any;
+  if (!row) return undefined;
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    username: row.username,
+    password: row.password,
+    createdAt: row.createdAt,
+  };
+}
 
 // -------------------------------------------------------------
 // Settings Persistence
@@ -575,7 +639,7 @@ export function sqliteUpsertContact(phone: string, name: string): Contact {
 try {
   const cols = db.prepare("PRAGMA table_info(appointments)").all() as any[];
   if (!cols.some((c: any) => c.name === "serviceType")) {
-    db.exec("ALTER TABLE appointments ADD COLUMN serviceType TEXT DEFAULT 'Check-up'");
+    db.exec("ALTER TABLE appointments ADD COLUMN serviceType TEXT DEFAULT 'General'");
     console.log("[SQLite] Added serviceType column to appointments.");
   }
 } catch (e) {
@@ -609,7 +673,7 @@ export function sqliteAddAppointment(
     customerPhone,
     preferredDay,
     preferredTime,
-    serviceType: serviceType || "Check-up",
+    serviceType: serviceType || "General",
     status: "confirmed",
     createdAt: Date.now(),
   };
@@ -644,7 +708,7 @@ export function sqliteGetAllAppointments(): Appointment[] {
     customerPhone: r.customerPhone,
     preferredDay: r.preferredDay,
     preferredTime: r.preferredTime,
-    serviceType: r.serviceType || "Check-up",
+    serviceType: r.serviceType || "General",
     status: r.status as Appointment["status"],
     createdAt: r.createdAt,
   }));
@@ -663,7 +727,7 @@ export function sqliteGetAppointmentsByPhoneDay(phone: string, day: string): App
     customerPhone: r.customerPhone,
     preferredDay: r.preferredDay,
     preferredTime: r.preferredTime,
-    serviceType: r.serviceType || "Check-up",
+    serviceType: r.serviceType || "General",
     status: r.status as Appointment["status"],
     createdAt: r.createdAt,
   }));
@@ -683,7 +747,7 @@ export function sqliteGetAllAppointmentsByPhone(phone: string): Appointment[] {
     customerPhone: r.customerPhone,
     preferredDay: r.preferredDay,
     preferredTime: r.preferredTime,
-    serviceType: r.serviceType || "Check-up",
+    serviceType: r.serviceType || "General",
     status: r.status as Appointment["status"],
     createdAt: r.createdAt,
   }));
@@ -703,7 +767,7 @@ export function sqliteGetAllAppointmentsByPhoneAll(phone: string): Appointment[]
     customerPhone: r.customerPhone,
     preferredDay: r.preferredDay,
     preferredTime: r.preferredTime,
-    serviceType: r.serviceType || "Check-up",
+    serviceType: r.serviceType || "General",
     status: r.status as Appointment["status"],
     createdAt: r.createdAt,
   }));

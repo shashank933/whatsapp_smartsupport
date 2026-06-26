@@ -52,15 +52,14 @@ interface TranslationResult {
 /** Deterministic mock map: Arabic input → English translation */
 const ARABIC_TRANSLATION_MAP: Record<string, { english: string; matchKey: string }> = {
   "مرحبا": { english: "Hello", matchKey: "مرحبا" },
-  "عندي الم في الاسنان": { english: "I have a toothache", matchKey: "عندي الم في الاسنان" },
   "اريد حجز موعد": { english: "I want to book an appointment", matchKey: "اريد حجز موعد" },
-  "اسمي احمد يوم الاحد الساعة 3": { english: "My name is Ahmed, Sunday at 3 PM", matchKey: "اسمي احمد" },
-  "مرحباً، اسمي فاطمة. أود حجز موعد للفحص يوم الأحد الساعة العاشرة صباحاً": {
-    english: "Hello, my name is Fatima. I would like to book an appointment for a check-up on Sunday at 10 AM.",
-    matchKey: "أود حجز موعد للفحص",
+  "اسمي احمد يوم الاثنين الساعة 3": { english: "My name is Ahmed, Monday at 3 PM", matchKey: "اسمي احمد" },
+  "مرحباً، اسمي فاطمة. أود حجز موعد يوم الاثنين الساعة العاشرة صباحاً": {
+    english: "Hello, my name is Fatima. I would like to book an appointment on Monday at 10 AM.",
+    matchKey: "أود حجز موعد",
   },
-  "السلام عليكم، كم سعر تبييض الأسنان؟": { english: "Hello, how much does teeth whitening cost?", matchKey: "تبييض" },
-  "عندي نزيف شديد في اللثة": { english: "I have severe gum bleeding", matchKey: "نزيف" },
+  "السلام عليكم، ما هي ساعات العمل؟": { english: "Hello, what are your working hours?", matchKey: "ساعات العمل" },
+  "احتاج مساعدة": { english: "I need help", matchKey: "احتاج" },
 };
 
 function mockLLMTranslateToEnglish(message: string): TranslationResult {
@@ -99,13 +98,12 @@ function mockTranslateToLanguage(text: string, targetLang: string): string {
   // Deterministic reverse translations
   const reverseMap: Record<string, string> = {
     "Hello": "مرحبا",
-    "I have a toothache": "عندي الم في الاسنان",
     "I want to book an appointment": "اريد حجز موعد",
-    "My name is Ahmed, Sunday at 3 PM": "اسمي احمد يوم الاحد الساعة 3",
-    "Hello, my name is Fatima. I would like to book an appointment for a check-up on Sunday at 10 AM.":
-      "مرحباً، اسمي فاطمة. أود حجز موعد للفحص يوم الأحد الساعة العاشرة صباحاً",
-    "Hello, how much does teeth whitening cost?": "السلام عليكم، كم سعر تبييض الأسنان؟",
-    "I have severe gum bleeding": "عندي نزيف شديد في اللثة",
+    "My name is Ahmed, Monday at 3 PM": "اسمي احمد يوم الاثنين الساعة 3",
+    "Hello, my name is Fatima. I would like to book an appointment on Monday at 10 AM.":
+      "مرحباً، اسمي فاطمة. أود حجز موعد يوم الاثنين الساعة العاشرة صباحاً",
+    "Hello, what are your working hours?": "السلام عليكم، ما هي ساعات العمل؟",
+    "I need help": "احتاج مساعدة",
   };
 
   const translated = reverseMap[text] || text;
@@ -131,10 +129,10 @@ const arabicTestCases: ArabicTestCase[] = [
     expectedEnglish: "Hello",
   },
   {
-    input: "عندي الم في الاسنان",
-    description: "Arabic: 'I have a toothache'",
+    input: "احتاج مساعدة",
+    description: "Arabic: 'I need help'",
     expectedLanguage: "ar",
-    expectedEnglish: "I have a toothache",
+    expectedEnglish: "I need help",
   },
   {
     input: "اريد حجز موعد",
@@ -143,29 +141,23 @@ const arabicTestCases: ArabicTestCase[] = [
     expectedEnglish: "I want to book an appointment",
   },
   {
-    input: "اسمي احمد يوم الاحد الساعة 3",
+    input: "اسمي احمد يوم الاثنين الساعة 3",
     description: "Arabic: Booking with name/day/time",
     expectedLanguage: "ar",
-    expectedEnglish: "My name is Ahmed, Sunday at 3 PM",
+    expectedEnglish: "My name is Ahmed, Monday at 3 PM",
   },
   {
-    input: "مرحباً، اسمي فاطمة. أود حجز موعد للفحص يوم الأحد الساعة العاشرة صباحاً",
-    description: "Arabic: Fatima booking check-up",
+    input: "مرحباً، اسمي فاطمة. أود حجز موعد يوم الاثنين الساعة العاشرة صباحاً",
+    description: "Arabic: Fatima booking appointment",
     expectedLanguage: "ar",
     expectedEnglish:
-      "Hello, my name is Fatima. I would like to book an appointment for a check-up on Sunday at 10 AM.",
+      "Hello, my name is Fatima. I would like to book an appointment on Monday at 10 AM.",
   },
   {
-    input: "السلام عليكم، كم سعر تبييض الأسنان؟",
-    description: "Arabic: 'How much is teeth whitening?'",
+    input: "السلام عليكم، ما هي ساعات العمل؟",
+    description: "Arabic: 'What are your working hours?'",
     expectedLanguage: "ar",
-    expectedEnglish: "Hello, how much does teeth whitening cost?",
-  },
-  {
-    input: "عندي نزيف شديد في اللثة",
-    description: "Arabic: Emergency - severe gum bleeding",
-    expectedLanguage: "ar",
-    expectedEnglish: "I have severe gum bleeding",
+    expectedEnglish: "Hello, what are your working hours?",
   },
 ];
 

@@ -1,4 +1,4 @@
-# Bright Smile Dental Clinic — Cost Estimate
+# WhatsApp SmartSupport — Cost Estimate
 
 ## Actual Stack (from source code analysis)
 

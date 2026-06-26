@@ -32,20 +32,20 @@ const testFaqs: FAQItem[] = [
   {
     id: "faq1",
     question: "What are your hours?",
-    answer: "We're open Sat-Thu 9AM-9PM.",
+    answer: "We're open Mon-Fri 9AM-6PM.",
     keywords: ["hours", "open", "time"],
   },
   {
     id: "faq2",
-    question: "How much is a check-up?",
-    answer: "Check-up costs 15 KWD.",
-    keywords: ["price", "cost", "check-up"],
+    question: "What services do you offer?",
+    answer: "We offer general support and consulting services.",
+    keywords: ["services", "offer", "support"],
   },
   {
     id: "faq3",
-    question: "Do you do teeth whitening?",
-    answer: "Yes, teeth whitening is 80 KWD.",
-    keywords: ["whitening", "white", "bleach"],
+    question: "Where are you located?",
+    answer: "We are located in the business district, downtown.",
+    keywords: ["location", "where", "address"],
   },
 ];
 
@@ -76,7 +76,7 @@ describe("containsAny", () => {
   });
 
   it("matches substrings", () => {
-    expect(containsAny("I'm bleeding a lot", ["bleed"])).toBe(true);
+    expect(containsAny("I need help urgently", ["help", "urgent"])).toBe(true);
   });
 
   it("matches Arabic emergency keywords", () => {
@@ -232,7 +232,7 @@ describe("extractName", () => {
 
     it("extracts name from full Arabic booking message", () => {
       const result = extractName(
-        "مرحباً، اسمي فاطمة. أود حجز موعد للفحص يوم الأحد الساعة العاشرة صباحاً"
+        "مرحباً، اسمي فاطمة. أود حجز موعد يوم الاثنين الساعة العاشرة صباحاً"
       );
       expect(result).toBe("فاطمة");
     });
@@ -266,15 +266,15 @@ describe("ruleBasedReply", () => {
   });
 
   it("matches FAQ by question text (exact match bonus +3)", () => {
-    const result = ruleBasedReply("how much is a check-up", testProfile, testFaqs);
+    const result = ruleBasedReply("what services do you offer", testProfile, testFaqs);
     expect(result.matchedFaqId).toBe("faq2");
-    expect(result.replyText).toContain("15 KWD");
+    expect(result.replyText).toContain("support");
   });
 
-  it("matches whitening question", () => {
-    const result = ruleBasedReply("do you do whitening", testProfile, testFaqs);
+  it("matches location question", () => {
+    const result = ruleBasedReply("where are you located", testProfile, testFaqs);
     expect(result.matchedFaqId).toBe("faq3");
-    expect(result.replyText).toContain("80 KWD");
+    expect(result.replyText).toContain("business district");
   });
 
   it("returns fallback when no FAQ matches", () => {
@@ -372,7 +372,7 @@ describe("generateAIResponseForMessage", () => {
     expect(typeof result.isAutoRepliable).toBe("boolean");
   });
 
-  it("rejects booking on Friday (clinic closed)", async () => {
+  it("rejects booking on Friday (business closed on weekends)", async () => {
     const result = await generateAIResponseForMessage(
       "I want to book my name is Ali on Friday at 9 AM",
       emptyHistory,
@@ -583,15 +583,14 @@ describe("translation logging", () => {
 /** Deterministic mock map: Arabic input → English translation */
 const ARABIC_TRANSLATION_MAP: Record<string, { english: string; matchKey: string }> = {
   "مرحبا": { english: "Hello", matchKey: "مرحبا" },
-  "عندي الم في الاسنان": { english: "I have a toothache", matchKey: "عندي الم في الاسنان" },
   "اريد حجز موعد": { english: "I want to book an appointment", matchKey: "اريد حجز موعد" },
   "اسمي احمد يوم الاحد الساعة 3": { english: "My name is Ahmed, Sunday at 3 PM", matchKey: "اسمي احمد" },
-  "مرحباً، اسمي فاطمة. أود حجز موعد للفحص يوم الأحد الساعة العاشرة صباحاً": {
-    english: "Hello, my name is Fatima. I would like to book an appointment for a check-up on Sunday at 10 AM.",
-    matchKey: "أود حجز موعد للفحص",
+  "مرحباً، اسمي فاطمة. أود حجز موعد يوم الاثنين الساعة العاشرة صباحاً": {
+    english: "Hello, my name is Fatima. I would like to book an appointment on Monday at 10 AM.",
+    matchKey: "أود حجز موعد",
   },
-  "السلام عليكم، كم سعر تبييض الأسنان؟": { english: "Hello, how much does teeth whitening cost?", matchKey: "تبييض" },
-  "عندي نزيف شديد في اللثة": { english: "I have severe gum bleeding", matchKey: "نزيف" },
+  "السلام عليكم، ما هي ساعات العمل؟": { english: "Hello, what are your working hours?", matchKey: "ساعات العمل" },
+  "احتاج مساعدة عاجلة": { english: "I need urgent help", matchKey: "مساعدة عاجلة" },
 };
 
 /**
@@ -626,18 +625,17 @@ function mockTranslateToEnglish(message: string): { originalLanguage: string; en
 /** Deterministic mock reverse translations */
 const REVERSE_MAP: Record<string, string> = {
   "Hello": "مرحبا",
-  "I have a toothache": "عندي الم في الاسنان",
   "I want to book an appointment": "اريد حجز موعد",
   "My name is Ahmed, Sunday at 3 PM": "اسمي احمد يوم الاحد الساعة 3",
-  "Hello, my name is Fatima. I would like to book an appointment for a check-up on Sunday at 10 AM.":
-    "مرحباً، اسمي فاطمة. أود حجز موعد للفحص يوم الأحد الساعة العاشرة صباحاً",
-  "Hello, how much does teeth whitening cost?": "السلام عليكم، كم سعر تبييض الأسنان؟",
-  "I have severe gum bleeding": "عندي نزيف شديد في اللثة",
+  "Hello, my name is Fatima. I would like to book an appointment on Monday at 10 AM.":
+    "مرحباً، اسمي فاطمة. أود حجز موعد يوم الاثنين الساعة العاشرة صباحاً",
+  "Hello, what are your working hours?": "السلام عليكم، ما هي ساعات العمل؟",
+  "I need urgent help": "احتاج مساعدة عاجلة",
   "I'd love to book that for you!": "يسعدني حجز ذلك لك!",
   "Your appointment is confirmed!": "تم تأكيد حجز موعدك!",
   "Sorry, we're closed on Fridays.": "عذراً، نحن مغلقون يوم الجمعة.",
-  "This sounds like a dental emergency requiring immediate care. Please go to the nearest hospital emergency room right now.":
-    "هذا يبدو كحالة طوارئ أسنان تتطلب رعاية فورية. يرجى الذهاب إلى أقرب غرفة طوارئ في المستشفى الآن.",
+  "This requires immediate attention. Please contact our support team directly.":
+    "هذا يتطلب اهتماماً فورياً. يرجى الاتصال بفريق الدعم مباشرة.",
 };
 
 /** Deterministic mock of translateToLanguage — mimics LLM translating back to target language */
@@ -689,26 +687,26 @@ describe("mock LLM translation", () => {
       expect(result.englishText).toBe("I want to book an appointment");
     });
 
-    it("detects Arabic emergency message and translates", () => {
-      const result = mockTranslateToEnglish("عندي نزيف شديد في اللثة");
+    it("detects Arabic urgent message and translates", () => {
+      const result = mockTranslateToEnglish("احتاج مساعدة عاجلة");
       expect(result.originalLanguage).toBe("ar");
-      expect(result.englishText).toBe("I have severe gum bleeding");
+      expect(result.englishText).toBe("I need urgent help");
     });
 
     it("detects complex Arabic sentence with name, day, and time", () => {
       const result = mockTranslateToEnglish(
-        "مرحباً، اسمي فاطمة. أود حجز موعد للفحص يوم الأحد الساعة العاشرة صباحاً"
+        "مرحباً، اسمي فاطمة. أود حجز موعد يوم الاثنين الساعة العاشرة صباحاً"
       );
       expect(result.originalLanguage).toBe("ar");
       expect(result.englishText).toBe(
-        "Hello, my name is Fatima. I would like to book an appointment for a check-up on Sunday at 10 AM."
+        "Hello, my name is Fatima. I would like to book an appointment on Monday at 10 AM."
       );
     });
 
-    it("detects Arabic inquiry about whitening cost", () => {
-      const result = mockTranslateToEnglish("السلام عليكم، كم سعر تبييض الأسنان؟");
+    it("detects Arabic inquiry about working hours", () => {
+      const result = mockTranslateToEnglish("السلام عليكم، ما هي ساعات العمل؟");
       expect(result.originalLanguage).toBe("ar");
-      expect(result.englishText).toBe("Hello, how much does teeth whitening cost?");
+      expect(result.englishText).toBe("Hello, what are your working hours?");
     });
 
     it("returns 'en' for English messages unchanged", () => {
@@ -729,9 +727,9 @@ describe("mock LLM translation", () => {
       expect(result).toBe("Hello world");
     });
 
-    it("translates to Arabic for emergency-related text", () => {
-      const result = mockTranslateToLanguage("I have severe gum bleeding", "ar");
-      expect(result).toBe("عندي نزيف شديد في اللثة");
+    it("translates to Arabic for support-related text", () => {
+      const result = mockTranslateToLanguage("I need urgent help", "ar");
+      expect(result).toBe("احتاج مساعدة عاجلة");
     });
 
     it("translates 'I'd love to book that for you!' to Arabic", () => {
@@ -741,18 +739,18 @@ describe("mock LLM translation", () => {
   });
 
   describe("full Arabic message flow (translate → process → translate back)", () => {
-    it("completes full cycle: Arabic emergency → English → Arabic reply", () => {
+    it("completes full cycle: Arabic support request → English → Arabic reply", () => {
       // Step 1: Translate Arabic input to English (mock LLM)
-      const { originalLanguage, englishText } = mockTranslateToEnglish("عندي نزيف شديد في اللثة");
+      const { originalLanguage, englishText } = mockTranslateToEnglish("احتاج مساعدة عاجلة");
       expect(originalLanguage).toBe("ar");
-      expect(englishText).toBe("I have severe gum bleeding");
+      expect(englishText).toBe("I need urgent help");
 
       // Step 2: Process in English (keyword detection)
-      expect(containsAny(englishText.toLowerCase(), ["bleeding", "blood", "emergency"])).toBe(true);
+      expect(containsAny(englishText.toLowerCase(), ["help", "urgent", "support"])).toBe(true);
 
-      // Step 3: Draft English reply (simulate emergency reply generation)
+      // Step 3: Draft English reply (simulate reply generation)
       const englishReply =
-        "This sounds like a dental emergency requiring immediate care. Please go to the nearest hospital emergency room right now.";
+        "This requires immediate attention. Please contact our support team directly.";
 
       // Step 4: Translate reply back to Arabic
       const finalReply = mockTranslateToLanguage(englishReply, originalLanguage);
@@ -763,7 +761,7 @@ describe("mock LLM translation", () => {
       const content = fs.readFileSync(TRANSLATION_LOG, "utf-8");
       expect(content).toContain("[LLM TRANSLATE]");
       expect(content).toContain("[TRANSLATION]");
-      expect(content).toContain("نزيف");
+      expect(content).toContain("مساعدة");
     });
 
     it("completes full cycle: Arabic booking → English → Arabic reply", () => {

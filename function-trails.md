@@ -72,7 +72,7 @@ syncContactToHubSpot(phone, name, messageText)
   │   Reads process.env.HUBSPOT_ACCESS_TOKEN; returns early if null
   │
   ├─ detectContactReason(messageText)               [hubspot.ts:7]
-  │   Keyword matching: emergency, medical_advice, booking, pricing, etc.
+  │   Keyword matching: urgent, complaint, booking, pricing, etc.
   │
   ├─ searchHubSpotContact(phone)                    [hubspot.ts:49]
   │   POST /crm/v3/objects/contacts/search
@@ -133,8 +133,8 @@ generateAIResponseForMessage(messageText, history, memoryProfile, memoryFaqs, ph
   │   │   English + Arabic keyword lists: threats, profanity
   │   │
   │   ├─ detectOffTopic()                            [guardrails.ts:84]
-  │   │   15+ dental-related patterns (EN + AR). Short messages (<5 chars) pass.
-  │   │   Blocks only if NO dental/business pattern matches
+  │   │   Generic business patterns. Passes all messages through.
+  │   │   Business scope enforced by LLM prompt and FAQ matching.
   │   │
   │   ├─ detectPII()                                 [guardrails.ts:117]
   │   │   Credit card / civil ID / SSN patterns. FLAGS only (does not block).
@@ -145,7 +145,7 @@ generateAIResponseForMessage(messageText, history, memoryProfile, memoryFaqs, ph
   ├─ buildCustomerContext(phone)                     [sqliteStore.ts:409]
   │   ├─ sqliteGetThreadByPhone()                    [sqliteStore.ts:245]
   │   ├─ sqliteGetMessagesByThreadId()               [sqliteStore.ts:372]
-  │   ├─ Scans for emergency/pain keywords (EN + AR)
+  │   ├─ Scans for booking/day keywords
   │   ├─ Scans for booking/day keywords
   │   ├─ SELECT appointments WHERE customerPhone = ?
   │   └─ buildContextPrompt()                        [sqliteStore.ts:477]
@@ -160,9 +160,9 @@ generateAIResponseForMessage(messageText, history, memoryProfile, memoryFaqs, ph
   │   │
   │   └─ [emergency hit] → translateToLanguage()    [responseEngine.ts:349]
   │       Returns emergency redirect (confidence=1.0, isEmergency=true)
-  │
+
   ├─ [No emergency] Construct LLM Prompt             [responseEngine.ts:508]
-  │   Includes: clinic info, FAQs, conversation history, customer context, appointments
+  │   Includes: business info, FAQs, conversation history, customer context, appointments
   │   Profile.systemContext is loaded at startup from:
   │     ├─ buildSystemContext()                         [memoryStore.ts:70]
   │     │   ├─ baseSystemContext (hardcoded)            [memoryStore.ts:67]
@@ -171,8 +171,8 @@ generateAIResponseForMessage(messageText, history, memoryProfile, memoryFaqs, ph
   │     │       Appends as "ADDITIONAL BEHAVIOUR RULES:" section
   │     │
   │     └─ Injected into LLM prompt as profile.systemContext
-  │         Provides emergency detection, medical advice refusal, booking flow,
-  │         FAQ matching, language detection, and fallback behaviour rules
+  │         Provides booking flow, FAQ matching, language detection,
+  │         and fallback behaviour rules
   │
   ├─ Router: getLlmProvider()                        [memoryStore.ts:89]
   │   Returns "gemini", "deepseek", or "rule"
@@ -198,7 +198,7 @@ generateAIResponseForMessage(messageText, history, memoryProfile, memoryFaqs, ph
   ├─ ** OUTPUT GUARDRAILS **                         [responseEngine.ts:634]
   │   applyOutputGuardrails(result)                   [guardrails.ts:237]
   │   │
-  │   ├─ detectMedicalAdviceInOutput()               [guardrails.ts:132]
+  │   ├─ detectUnsafeAdviceInOutput()               [guardrails.ts:132]
   │   │   10 English + 4 Arabic regex patterns scanning LLM reply
   │   │   Catches leaked clinical advice despite prompt rules
   │   │
@@ -408,7 +408,7 @@ applyInputGuardrails()           [guardrails.ts:198]
                                                           ▼
                                         applyOutputGuardrails()     [guardrails.ts:237]
                                                           │
-                                        ├─ detectMedicalAdviceInOutput()  [guardrails.ts:132] → BLOCK
+                                        ├─ detectUnsafeAdviceInOutput()  [guardrails.ts:132] → BLOCK
                                         ├─ checkConfidence()              [guardrails.ts:155] → BLOCK if < 0.5
                                         └─ sanitizeOutput()               [guardrails.ts:165] → CORRECT (redact PII)
                                                           │
@@ -455,9 +455,9 @@ Both trails converge on the same core pipeline:
 | `applyOutputGuardrails()` | `backend/ai/guardrails.ts` | 237 | Top-level output hook |
 | `detectPromptInjection()` | `backend/ai/guardrails.ts` | 21 | Input — blocks |
 | `detectAbuse()` | `backend/ai/guardrails.ts` | 49 | Input — blocks |
-| `detectOffTopic()` | `backend/ai/guardrails.ts` | 84 | Input — blocks if no match |
+| `detectOffTopic()` | `backend/ai/guardrails.ts` | 84 | Input — passes all |
 | `detectPII()` | `backend/ai/guardrails.ts` | 117 | Input — flags only |
-| `detectMedicalAdviceInOutput()` | `backend/ai/guardrails.ts` | 132 | Output — blocks |
+| `detectUnsafeAdviceInOutput()` | `backend/ai/guardrails.ts` | 132 | Output — blocks |
 | `checkConfidence()` | `backend/ai/guardrails.ts` | 155 | Output — blocks if < 0.5 |
 | `sanitizeOutput()` | `backend/ai/guardrails.ts` | 165 | Output — corrects |
 
@@ -475,7 +475,7 @@ Both trails converge on the same core pipeline:
 | `backend/db/memoryStore.ts:13-31,67-76,78-86,109-112,289-293` | In-memory config, profile (with `.md` rule loading), LLM provider, webhook logs |
 | `backend/db/sqliteStore.ts` | All SQLite persistence (threads, messages, contacts, appointments) |
 | `backend/ai/responseEngine.ts` | Full AI pipeline (translation, LLM, emergency check, booking) |
-| `backend/ai/guardrails.ts` | Input/output guardrails (prompt injection, abuse, off-topic, PII, medical advice, confidence, sanitization) |
+| `backend/ai/guardrails.ts` | Input/output guardrails (prompt injection, abuse, off-topic, PII, unsafe advice, confidence, sanitization) |
 | `backend/integrations/hubspot.ts` | HubSpot CRM sync |
 | `backend/sse.ts:5,20` | SSE connection and broadcast |
 | `backend/test-webhook-e2e.ts:250-276` | E2E test calling simulate endpoint |

@@ -8,7 +8,7 @@ export interface WhatsAppConfig {
 export interface BusinessProfile {
   name: string;
   industry: string;
-  replyTone: 'professional' | 'friendly' | 'casual' | 'supportive';
+  replyTone: 'professional' | 'friendly' | 'casual' | 'supportive' | 'hospitable';
   systemContext: string;
   autoReplyEnabled: boolean;
   minConfidence: number; // e.g. 0.8
@@ -56,6 +56,15 @@ export interface CannedResponse {
   id: string;
   shortcut: string; // e.g. "/welcome"
   text: string;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  username: string;
+  password: string;
+  createdAt: number;
 }
 
 export interface WebhookLog {

@@ -43,10 +43,10 @@ function mockLLMTranslateToEnglish(message: string): { originalLanguage: string;
     // Simulated translations
     const mockMap: Record<string, string> = {
       "مرحبا": "Hello",
-      "عندي الم في الاسنان": "I have a toothache",
       "اريد حجز موعد": "I want to book an appointment",
-      "اسمي احمد يوم الاحد الساعة 3": "My name is Ahmed, Sunday at 3 PM",
-      "مرحباً، اسمي فاطمة. أود حجز موعد للفحص يوم الأحد الساعة العاشرة صباحاً": "Hello, my name is Fatima. I would like to book an appointment for a check-up on Sunday at 10 AM.",
+      "اسمي احمد يوم الاثنين الساعة 3": "My name is Ahmed, Monday at 3 PM",
+      "مرحباً، اسمي فاطمة. أود حجز موعد يوم الاثنين الساعة العاشرة صباحاً": "Hello, my name is Fatima. I would like to book an appointment on Monday at 10 AM.",
+      "احتاج مساعدة": "I need help",
     };
 
     let englishText = message;
@@ -80,11 +80,11 @@ function mockTranslateToLanguage(text: string, targetLang: string): string {
 const testMessages = [
   { input: "Hello, what are your working hours?", desc: "English message" },
   { input: "مرحبا", desc: "Arabic greeting" },
-  { input: "عندي الم في الاسنان", desc: "Arabic: I have a toothache" },
+  { input: "احتاج مساعدة", desc: "Arabic: I need help" },
   { input: "اريد حجز موعد", desc: "Arabic: I want to book" },
-  { input: "اسمي احمد يوم الاحد الساعة 3", desc: "Arabic: Booking with name/day/time" },
-  { input: "مرحباً، اسمي فاطمة. أود حجز موعد للفحص يوم الأحد الساعة العاشرة صباحاً.", desc: "Arabic: Fatima booking check-up Sunday 10 AM" },
-  { input: "I need to see a dentist urgently", desc: "English: urgent dental" },
+  { input: "اسمي احمد يوم الاثنين الساعة 3", desc: "Arabic: Booking with name/day/time" },
+  { input: "مرحباً، اسمي فاطمة. أود حجز موعد يوم الاثنين الساعة العاشرة صباحاً.", desc: "Arabic: Fatima booking Monday 10 AM" },
+  { input: "I need to speak with a representative urgently", desc: "English: urgent support" },
 ];
 
 // -------------------------------------------------------------

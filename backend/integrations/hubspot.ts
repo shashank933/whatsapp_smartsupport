@@ -7,19 +7,17 @@ function getToken(): string | null {
 function detectContactReason(messageText: string): string {
   const lower = messageText.toLowerCase();
 
-  const emergency = [
-    "bleeding", "blood", "emergency", "urgent", "severe pain", "accident",
-    "trauma", "abscess", "infection", "hospital", "نزيف", "طوارئ",
-    "حادث", "ألم شديد", "ورم",
+  const urgent = [
+    "urgent", "immediately", "asap", "right now", "emergency",
+    "طارئ", "عاجل", "فورا", "حالا",
   ];
-  if (emergency.some((kw) => lower.includes(kw))) return "emergency";
+  if (urgent.some((kw) => lower.includes(kw))) return "urgent";
 
-  const medical = [
-    "diagnose", "sick", "pain", "hurt", "cavity", "sensitive",
-    "prescribe", "medicine", "antibiotic", "مرض", "تشخيص", "ألم",
-    "تسوس", "حساسية", "عندي", "أعاني",
+  const complaint = [
+    "complaint", "issue", "problem", "not working", "broken", "error",
+    "شكوى", "مشكلة", "عطل", "خطأ", "ما يشتغل",
   ];
-  if (medical.some((kw) => lower.includes(kw))) return "medical_advice";
+  if (complaint.some((kw) => lower.includes(kw))) return "complaint";
 
   const booking = [
     "book", "appointment", "schedule", "reserve", "حجز", "موعد",
@@ -28,13 +26,13 @@ function detectContactReason(messageText: string): string {
   if (booking.some((kw) => lower.includes(kw))) return "booking";
 
   const pricing = [
-    "price", "cost", "kwd", "how much", "سعر", "تكلفة", "كم", "بكم",
+    "price", "cost", "how much", "fee", "charge", "سعر", "تكلفة", "كم", "بكم",
   ];
   if (pricing.some((kw) => lower.includes(kw))) return "pricing";
 
   const hoursLocation = [
     "open", "hours", "time", "where", "location", "address",
-    "friday", "ساعات", "مفتوح", "أين", "موقع", "عنوان", "الجمعة",
+    "weekend", "ساعات", "مفتوح", "أين", "موقع", "عنوان",
   ];
   if (hoursLocation.some((kw) => lower.includes(kw))) return "hours_location";
 

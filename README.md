@@ -1,6 +1,6 @@
-# WhatsApp Support Agent Hub
+# WhatsApp SmartSupport
 
-AI-powered WhatsApp customer support agent for **Bright Smile Dental Clinic** in Kuwait. Handles appointment booking, FAQ responses, and HubSpot CRM sync — all via WhatsApp messaging.
+AI-powered WhatsApp customer support platform for any business. Handles appointment booking, FAQ responses, and HubSpot CRM sync — all via WhatsApp messaging.
 
 ## Features
 
@@ -9,7 +9,7 @@ AI-powered WhatsApp customer support agent for **Bright Smile Dental Clinic** in
 - **Appointment Booking** — NLP-driven booking flow with duplicate prevention (persisted in SQLite)
 - **FAQ Matching** — rule-based keyword matching for common questions (hours, location, services, pricing)
 - **HubSpot Sync** — auto-creates/updates contacts in HubSpot when new customers message
-- **Guardrails** — content safety checks prevent medical advice, block inappropriate content, and detect emergencies
+- **Configurable Guardrails** — content safety checks for prompt injection, abuse, off-topic, and unsafe advice detection
 - **Admin Dashboard** — React SPA with thread management, appointment list, contacts, webhook logs, and LLM provider toggle
 - **SSE Live Updates** — dashboard refreshes in real-time without polling
 

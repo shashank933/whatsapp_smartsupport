@@ -1,4 +1,4 @@
-# Bright Smile Dental Clinic — Test Sheet
+# WhatsApp SmartSupport — Test Sheet
 
 ## Test Cases (All run through the Simulator tab in the UI)
 
@@ -9,15 +9,15 @@
 **Input:**
 - Name: Fatima Al-Ali
 - Phone: +965 5551-2345
-- Message: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
+- Message: "Hi, my name is Fatima. I'd like to book an appointment for Monday at 10 AM."
 
 **Expected Behaviour:**
 - AI detects booking intent
-- Extracts: name="Fatima", day="Sunday", time="10:00 AM"
+- Extracts: name="Fatima", day="Monday", time="10:00 AM"
 - Confirms appointment with full details
 - Appointment saved to SQLite database
 
-**Pass Criteria:** ✅ Confirmation message shows name, day, time, price (15 KWD), clinic name. Appointment persisted in SQLite.
+**Pass Criteria:** Confirmation message shows name, day, time. Appointment persisted in SQLite.
 
 ---
 
@@ -26,15 +26,14 @@
 **Input:**
 - Name: John Smith
 - Phone: +965 5551-0001
-- Message: "helo, i wud like to bok a cleening pls for munday at 2pm. my name John"
+- Message: "helo, i wud like to bok an apointment pls for munday at 2pm. my name John"
 
 **Expected Behaviour:**
 - AI should handle typos gracefully
-- Rule-based engine picks up "book" / "cleaning" keywords via booking/FAQ matching
-- Should match FAQ for cleaning (25 KWD) or attempt to extract booking info
+- Rule-based engine picks up "book" keywords via booking matching
 - Friendly response despite typos
 
-**Pass Criteria:** AI responds helpfully, either matching FAQ or prompting for booking clarification. Does not fail or return empty.
+**Pass Criteria:** AI responds helpfully, either confirming booking or prompting for clarification. Does not fail or return empty.
 
 ---
 
@@ -43,49 +42,44 @@
 **Input:**
 - Name: Mohammed Al-Rashed
 - Phone: +965 9988-7766
-- Message: "السلام عليكم، كم سعر تبييض الأسنان؟"
+- Message: "السلام عليكم، ما هي ساعات العمل؟"
 
 **Expected Behaviour:**
-- Language detection identifies Arabic (>30% Arabic characters)
-- Matches FAQ for teeth whitening pricing (80 KWD)
+- Language detection identifies Arabic
+- Matches FAQ for business hours
 - Response is IN ARABIC
 
-**Pass Criteria:** Response is in Arabic, mentions 80 د.ك for teeth whitening.
+**Pass Criteria:** Response is in Arabic, mentions business hours.
 
 ---
 
-### ✅ Test 4: Request for Medical Advice (should REFUSE)
+### ✅ Test 4: FAQ Inquiry
 
 **Input:**
 - Name: Noor Al-Sabah
 - Phone: +965 6677-8899
-- Message: "I have pain in my gums since 2 weeks, do you think I need antibiotics?"
+- Message: "What services do you offer? I need help with my account."
 
 **Expected Behaviour:**
-- Keywords "pain in my gums", "do you think", "need antibiotics" trigger medical advice detection
-- AI POLITELY REFUSES to give medical advice
-- Suggests booking an in-person check-up (15 KWD)
-- Does NOT say "take X medicine" or "this sounds like Y condition"
+- AI matches FAQ for services or provides a helpful response
+- Does not make up information not in the knowledge base
 
-**Pass Criteria:** Response explicitly states can't give medical advice, suggests booking a check-up. No diagnosis or treatment recommendation.
+**Pass Criteria:** Response is relevant and helpful, matches FAQ or provides contact guidance.
 
 ---
 
-### ✅ Test 5: Emergency (should ESCALATE)
+### ✅ Test 5: Off-Topic Message
 
 **Input:**
 - Name: Karim Hassan
 - Phone: +965 5123-4567
-- Message: "Help! My tooth just broke and I am bleeding a lot, it hurts so bad."
+- Message: "I want to order a pizza with extra cheese and pepperoni."
 
 **Expected Behaviour:**
-- Keywords "bleeding", "broke", "hurts so bad" trigger emergency detection
-- AI IMMEDIATELY tells patient to go to nearest hospital ER
-- Mentions case flagged for dentist follow-up
-- Does NOT try to schedule an appointment
-- Does NOT ask questions
+- AI recognizes the message is outside business scope
+- Politely redirects or offers relevant help
 
-**Pass Criteria:** Response directs to ER, mentions flagging for human follow-up. No booking prompt, no diagnosis attempt.
+**Pass Criteria:** Response acknowledges the message is off-topic, offers to help with relevant business matters.
 
 ---
 
@@ -93,11 +87,11 @@
 
 | # | Scenario | Input Language | Expected Outcome | Status |
 |---|----------|---------------|------------------|--------|
-| 1 | Normal booking | English | Booking confirmed, saved to JSON | ✅ |
-| 2 | Message with typos | English | FAQ match or booking prompt | ✅ |
-| 3 | Arabic inquiry | Arabic | Price info in Arabic | ✅ |
-| 4 | Medical advice request | English | Polite refusal, suggest check-up | ✅ |
-| 5 | Dental emergency | English | Direct to ER, flag for human | ✅ |
+| 1 | Normal booking | English | Booking confirmed, saved to DB | ✅ |
+| 2 | Message with typos | English | Booking match or clarification prompt | ✅ |
+| 3 | Arabic inquiry | Arabic | Hours info in Arabic | ✅ |
+| 4 | FAQ inquiry | English | Relevant FAQ response | ✅ |
+| 5 | Off-topic message | English | Polite redirection | ✅ |
 
 ---
 

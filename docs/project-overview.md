@@ -1,8 +1,8 @@
-# Bright Smile Dental Clinic — WhatsApp AI Support Agent
+# WhatsApp SmartSupport — AI Support Agent
 
 ## Project Overview
 
-A full-stack WhatsApp AI assistant for a dental clinic in Salmiya, Kuwait. The agent handles incoming WhatsApp messages from patients — auto-replying to booking requests, medical enquiries, Arabic/English messages, and emergency alerts — all through a real-time admin dashboard.
+A full-stack WhatsApp AI assistant for any business. The agent handles incoming WhatsApp messages from customers — auto-replying to booking requests, enquiries, Arabic/English messages, and alerts — all through a real-time admin dashboard.
 
 ---
 
@@ -18,7 +18,7 @@ A full-stack WhatsApp AI assistant for a dental clinic in Salmiya, Kuwait. The a
 | **CRM** | HubSpot API | Auto-syncs new contacts to HubSpot CRM on first WhatsApp message |
 | **Messaging** | Meta WhatsApp Cloud API v25 | Live webhook receiver + outbound message sender |
 | **Container** | Docker + Docker Compose | Multi-stage build, slim production image (~150 MB) |
-| **Registry** | Docker Hub | `talapelliwars/whatsapp-support-agent-hub:latest` |
+| **Registry** | Docker Hub | `talapelliwars/whatsapp-smartsupport:latest` |
 
 ---
 
@@ -81,19 +81,19 @@ Admin Dashboard (React)
 
 ### AI Response Engine
 - **LLM-first architecture**: Messages route through Gemini/DeepSeek for intent understanding (not hardcoded keywords)
-- **Emergency bypass**: Bleeding, trauma, severe pain → immediate ER direction (keyword check, safety critical)
-- **LLM prompt includes**: full FAQ knowledge base, patient's appointment history, conversation context, clinic facts, behavior rules from `docs/prompt-behavior-rules.md`
+- **Configurable guardrails**: Prompt injection, abuse, and unsafe advice detection — industry-agnostic and configurable
+- **LLM prompt includes**: full FAQ knowledge base, customer's appointment history, conversation context, business facts, behavior rules from `docs/prompt-behavior-rules.md`
 - **Booking auto-save**: LLM returns structured JSON with booking fields → validated and saved to SQLite
 - **Duplicate prevention**: Checks DB for same-day confirmed appointments before booking
 - **Cancel/reschedule**: LLM detects cancel intent, references appointment by index, auto-cancels in DB
-- **Multi-language**: Auto-translates Arabic ↔ English via LLM, replies in patient's language
+- **Multi-language**: Auto-translates Arabic ↔ English via LLM, replies in customer's language
 
 ### Admin Dashboard
 - **Chat panel**: Thread list (open/pending/resolved filter), message thread, AI draft generation, manual send with canned responses
 - **Dashboard view**: Stats cards, appointments list (with service type), enquiries by status tabs, contacts list, cancel/delete actions
-- **Simulator tab**: Test incoming WhatsApp messages without live webhook
+- **Simulator tab**: Test incoming WhatsApp messages without live webhook, with preset scenarios for booking, Arabic, FAQ, and off-topic tests
 - **Meta API config**: Phone number ID, access token, verify token — persisted to SQLite
-- **FAQ knowledge base**: CRUD for clinic FAQs (editable in right panel, fed to LLM prompt)
+- **FAQ knowledge base**: CRUD for business FAQs (editable in right panel, fed to LLM prompt)
 - **Bulk operations**: Multi-select threads → bulk resolve or bulk delete
 - **SSE**: Real-time updates — no fixed polling, events push on webhook/simulate/send
 
@@ -116,7 +116,7 @@ Admin Dashboard (React)
 ## File Structure
 
 ```
-whatsapp-support-agent-hub/
+whatsapp-smartsupport/
 ├── server.ts                      # Express server entry point
 ├── src/
 │   ├── App.tsx                    # Main React admin dashboard
