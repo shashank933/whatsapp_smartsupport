@@ -1,6 +1,6 @@
 # WhatsApp SmartSupport — Cost Estimate
 
-## Actual Stack (from source code analysis)
+## Actual Stack (from source code analysis) 
 
 | Layer | Technology | Pricing Model |
 |---|---|---|
