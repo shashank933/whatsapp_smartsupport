@@ -3,6 +3,7 @@ import { BusinessProfile, FAQItem, ChatMessage } from "../../src/types";
 import { getLlmProvider } from "../db/memoryStore";
 import { buildCustomerContext, buildContextPrompt, sqliteAddAppointment, sqliteGetAppointmentsByPhoneDay, sqliteGetAllAppointmentsByPhone, sqliteGetAllAppointmentsByPhoneAll, sqliteCancelAppointment } from "../db/sqliteStore";
 import { normalizePhone } from "../utils/phone";
+import { applyInputGuardrails, applyOutputGuardrails } from "./guardrails";
 import * as fs from "fs";
 import * as path from "path";
 const DOCS_DIR = path.join(process.cwd(), "docs");
@@ -444,6 +445,19 @@ export async function generateAIResponseForMessage(
 
   const cleaned = englishText.toLowerCase();
 
+  const inputGuard = applyInputGuardrails(englishText, customerMessage);
+  if (inputGuard.blocked) {
+    const replyText = isNonEnglish
+      ? await translateToLanguage("I'm sorry, I can't process that request. How can I help you with dental care?", originalLanguage)
+      : "I'm sorry, I can't process that request. How can I help you with dental care?";
+    return {
+      replyText,
+      confidence: 1.0,
+      explanation: `Input blocked by guardrails: ${inputGuard.reason}`,
+      isAutoRepliable: false,
+    };
+  }
+
   // Build customer context if phone is provided
   let customerContextStr = "";
   let appointmentsStr = "";
@@ -578,6 +592,17 @@ Respond ONLY with a valid JSON object (no markdown, no backticks):
     console.log("No LLM available. Using rule-based fallback.");
     const fallback = ruleBasedReply(englishText, profile, faqs);
     if (isNonEnglish) fallback.replyText = await translateToLanguage(fallback.replyText, originalLanguage);
+    const outputGuard = applyOutputGuardrails(fallback);
+    if (outputGuard.blocked) {
+      return {
+        replyText: isNonEnglish
+          ? await translateToLanguage("I'm sorry, I encountered an issue. Please try again or contact us by phone.", originalLanguage)
+          : "I'm sorry, I encountered an issue. Please try again or contact us by phone.",
+        confidence: 0,
+        explanation: `Output blocked by guardrails: ${outputGuard.reason}`,
+        isAutoRepliable: false,
+      };
+    }
     return fallback;
   }
 
@@ -604,6 +629,25 @@ Respond ONLY with a valid JSON object (no markdown, no backticks):
         result.explanation += " [SAVED to DB]";
       }
     }
+  }
+
+  const outputGuard = applyOutputGuardrails(result);
+  if (outputGuard.blocked) {
+    const fallback = ruleBasedReply(englishText, profile, faqs);
+    if (isNonEnglish) fallback.replyText = await translateToLanguage(fallback.replyText, originalLanguage);
+    const fallbackGuard = applyOutputGuardrails(fallback);
+    if (!fallbackGuard.blocked) return fallback;
+    return {
+      replyText: isNonEnglish
+        ? await translateToLanguage("I'm sorry, I encountered an issue. Please try again or contact us by phone.", originalLanguage)
+        : "I'm sorry, I encountered an issue. Please try again or contact us by phone.",
+      confidence: 0,
+      explanation: `Output blocked by guardrails: ${outputGuard.reason}`,
+      isAutoRepliable: false,
+    };
+  }
+  if (outputGuard.correctedText) {
+    result.replyText = outputGuard.correctedText;
   }
 
   if (isNonEnglish) {

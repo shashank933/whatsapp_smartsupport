@@ -109,3 +109,6 @@ Welcome back to Bright Smile Dental Clinic. We are truly sorry, but your message
 [2026-06-25T13:00:21.321Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
 [2026-06-25T13:01:03.709Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
 [2026-06-25T13:01:35.675Z] [LLM TRANSLATE] Original (en): "cancel the booking" | English: "cancel the booking"
+[2026-06-25T14:04:37.261Z] [LLM TRANSLATE] Original (en): "Help! My tooth just broke and I am bleeding a lot, it hurts so bad." | English: "Help! My tooth just broke and I am bleeding a lot, it hurts so bad."
+[2026-06-26T08:55:29.727Z] [LLM TRANSLATE] Original (en): "I have pain in my gums since 2 weeks, do you think I need antibiotics?" | English: "I have pain in my gums since 2 weeks, do you think I need antibiotics?"
+[2026-06-26T09:35:12.096Z] [LLM TRANSLATE] Original (en): "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM." | English: "Hi, my name is Fatima. I'd like to book a check-up for Sunday at 10 AM."
