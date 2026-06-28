@@ -1,17 +1,21 @@
 # WhatsApp SmartSupport
 
-AI-powered WhatsApp customer support platform for any business. Handles appointment booking, FAQ responses, and HubSpot CRM sync — all via WhatsApp messaging.
+AI-powered multilingual WhatsApp customer support platform for any business. Not just a FAQ/booking bot — a full-stack prototype with CRM integration, real-time admin dashboard, and no-code per-client customization via the built-in AI configuration panel. Handles appointment booking, bilingual FAQ responses, and HubSpot CRM sync — all through WhatsApp messaging.
+
 
 ## Features
 
 - **WhatsApp Webhook Integration** — receives and responds to customer messages via the Meta WhatsApp Cloud API (Graph API v25)
-- **AI-Powered Responses** — Gemini and DeepSeek LLM providers with automatic language detection (Arabic/English)
-- **Appointment Booking** — NLP-driven booking flow with duplicate prevention (persisted in SQLite)
-- **FAQ Matching** — rule-based keyword matching for common questions (hours, location, services, pricing)
-- **HubSpot Sync** — auto-creates/updates contacts in HubSpot when new customers message
+- **Multilingual AI** — Gemini and DeepSeek LLM providers with automatic language detection and translation (Arabic ↔ English), plus bilingual FAQ keyword matching
+- **Appointment Booking** — NLP-driven booking flow with duplicate prevention, day restrictions, cancel/reschedule support (persisted in SQLite)
+- **FAQ Knowledge Base** — CRUD-manageable FAQs via the admin dashboard with bilingual keyword matching (hours, location, services, pricing, etc.)
+- **HubSpot CRM Sync** — auto-creates/updates contacts in HubSpot on every incoming message, with intelligent contact reason detection (urgent, complaint, booking, pricing, greeting, etc.)
+- **No-Code Client Customization** — edit system prompt, business context, reply tone, and confidence thresholds directly from the admin dashboard; switch LLM providers (Gemini/DeepSeek/Rule) with a dropdown
 - **Configurable Guardrails** — content safety checks for prompt injection, abuse, off-topic, and unsafe advice detection
-- **Admin Dashboard** — React SPA with thread management, appointment list, contacts, webhook logs, and LLM provider toggle
+- **Admin Dashboard** — React SPA with thread management, appointment list, contacts, webhook logs, message simulator, and AI config panel
 - **SSE Live Updates** — dashboard refreshes in real-time without polling
+
+![Chat Screenshot](docs/screenshot-chat.png)
 
 ## Quick Start
 
@@ -63,6 +67,20 @@ The server starts at `http://localhost:3000`. Access the admin dashboard at the 
 └── server.ts          # Express entry point
 ```
 
+## Client Customization
+
+Customize the AI for any business without touching code — everything is configurable from the admin dashboard (`/`):
+
+1. Open the **KB/FAQs** panel in the right sidebar
+2. Edit **Business Description** (the system prompt — defines behavior, rules, and context)
+3. Set **Company Name**, **Reply Tone** (hospitable, professional, friendly, casual, supportive)
+4. Adjust **Confidence Threshold** for auto-replies (50%–90%)
+5. Add/remove FAQs with bilingual keywords via the CRUD form
+6. Switch **LLM Provider** (Gemini / DeepSeek / Rule-Based) from the top nav dropdown
+7. Save — all changes take effect immediately without restarting the server
+
+> The system prompt written in the dashboard is persisted to `docs/prompt-behavior-rules.md` — easily version-controlled or hand-edited for advanced prompt engineering.
+
 ## WhatsApp Setup
 
 1. Create a Meta Business App with WhatsApp product
@@ -82,6 +100,7 @@ All secrets are passed via environment variables — no keys are hardcoded in th
 ## Tech Stack
 
 - **Backend:** Express.js, better-sqlite3, Google GenAI SDK, DeepSeek API
-- **Frontend:** React, Vite, Tailwind CSS
-- **Integrations:** WhatsApp Cloud API v25, HubSpot CRM
+- **Frontend:** React 19, Vite, Tailwind CSS
+- **AI/ML:** Gemini, DeepSeek (dual-provider with runtime toggle), bilingual translation (Arabic/English)
+- **Integrations:** WhatsApp Cloud API v25, HubSpot CRM (contact sync with reason detection)
 - **Infrastructure:** Docker, Docker Compose
